@@ -29,10 +29,10 @@ THRESH_UNSTABLE_ENERGY_SPAN_DB = 16.0
 BASELINE_ENERGY_STD_DB = 5.5
 
 THRESH_MONOTONE_PITCH_ST = 0.65
-THRESH_IRREGULAR_PITCH_ST = 2.10
+THRESH_IRREGULAR_PITCH_ST = 2.40
 BASELINE_PITCH_ST = 1.80
 
-THRESH_MUFFLED_CENTROID_HZ = 1200.0
+THRESH_MUFFLED_CENTROID_HZ = 550.0
 BASELINE_CENTROID_HZ = 2100.0
 
 VOICED_RMS_FLOOR_DB = -32.0
@@ -160,6 +160,60 @@ def detect_temporal_flaws(
         )
         flaw_counter += 1
 
+    # 1b. Pacing: Slow Speech / Slow Delivery
+    slow_intervals = []
+    in_slow = False
+    s_start = 0.0
+    s_min = 200.0
+
+    for i, wpm in enumerate(time_series.speech_rate_wpm):
+        t = time_stamps[i]
+        is_speech = (time_series.f0_contour[i] > 0 or time_series.rms_energy_db[i] > VOICED_RMS_FLOOR_DB)
+        if is_speech and 0.0 < wpm <= THRESH_SLOW_WPM:
+            if not in_slow:
+                in_slow = True
+                s_start = t
+                s_min = wpm
+            else:
+                s_min = min(s_min, wpm)
+        else:
+            if in_slow:
+                in_slow = False
+                slow_intervals.append((s_start, t, s_min))
+
+    if in_slow:
+        slow_intervals.append((s_start, time_stamps[-1], s_min))
+
+    final_slow = merge_and_filter_intervals(slow_intervals, max_gap_s=0.35, min_duration_s=0.40)
+
+    for start_s, end_s, observed_wpm in final_slow:
+        start_s, end_s = round(start_s, 2), round(end_s, 2)
+        delta = THRESH_SLOW_WPM - observed_wpm
+        severity = "severe" if delta > 30.0 else ("moderate" if delta > 15.0 else "minor")
+        transcript_slice = extract_transcript_slice(alignment, start_s, end_s)
+        expl, caveat = generate_flaw_explanation(
+            "slow_speech", start_s, end_s, observed_wpm,
+            BASELINE_WPM, THRESH_SLOW_WPM, "WPM", severity
+        )
+        flaws.append(
+            DetectedFlaw(
+                flaw_id=f"flaw_pacing_{flaw_counter:03d}",
+                category="slow_speech",
+                start_s=start_s,
+                end_s=end_s,
+                transcript_slice=transcript_slice,
+                observed_value=observed_wpm,
+                baseline_value=BASELINE_WPM,
+                threshold_value=THRESH_SLOW_WPM,
+                unit="WPM",
+                severity=severity,
+                confidence=0.90,
+                explanation=expl,
+                caveat=caveat
+            )
+        )
+        flaw_counter += 1
+
     # 2. Pause Control: Unnatural / Prolonged Pauses
     for pause in pauses:
         if pause.is_excessive or pause.duration_s >= THRESH_PROLONGED_PAUSE_S:
@@ -258,7 +312,7 @@ def detect_temporal_flaws(
         )
         flaw_counter += 1
 
-    for start_s, end_s, obs_span in merge_and_filter_intervals(unstable_energy_intervals, max_gap_s=0.35, min_duration_s=0.50):
+    for start_s, end_s, obs_span in merge_and_filter_intervals(unstable_energy_intervals, max_gap_s=0.75, min_duration_s=0.50):
         delta = obs_span - THRESH_UNSTABLE_ENERGY_SPAN_DB
         severity = "severe" if delta > 6.0 else ("moderate" if delta > 3.0 else "minor")
         transcript_slice = extract_transcript_slice(alignment, start_s, end_s)

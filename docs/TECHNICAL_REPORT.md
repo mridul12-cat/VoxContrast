@@ -71,7 +71,7 @@ The dataset spans diverse cadence profiles across 6 speeches:
 1. `speech_01_gettysburg`: Abraham Lincoln's Gettysburg Address (Rhetorical solemnity, measured cadence, 135 WPM).
 2. `speech_02_churchill`: Winston Churchill's "We Shall Fight on the Beaches" (Perorational crescendo, heavy pause structure, 125 WPM).
 3. `speech_03_kennedy`: John F. Kennedy's Inaugural Address (Antithetical balance, deliberate emphasis, 138 WPM).
-4. `speech_04_mlk`: Martin Luther King Jr.'s "I Have a Dream" (Sermonic cadence, wide pitch dynamic range, 130 WPM).
+4. `speech_04_keynote`: Next-Gen AI Keynote Announcement (Corporate technology keynote, rapid forward momentum, 140 WPM).
 5. `speech_05_defense`: Technical Doctoral Dissertation Defense (Rapid technical exposition, polysyllabic density, 145 WPM).
 6. `speech_06_debate`: Competitive Policy Debate Opening (High-density structured arguments, staccato rhythm, 155 WPM).
 

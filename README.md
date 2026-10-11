@@ -4,7 +4,7 @@
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![Macro IoU](https://img.shields.io/badge/Benchmark_Macro_IoU-0.7687-brightgreen.svg)](#benchmark-results)
+[![Macro IoU](https://img.shields.io/badge/Benchmark_Macro_IoU-0.8676-brightgreen.svg)](#benchmark-results)
 [![Deterministic Rubric](https://img.shields.io/badge/Rubric-100%25_Deterministic-success.svg)](#deterministic-rubric)
 
 **VoxContrast** is an open-source, deterministic, multimodal speech analytics system that grounds delivery flaws into precise temporal intervals ($[s_k, e_k]$) with mathematical causal explanations, evaluating performances on a standardized 100-point rubric with zero external black-box LLM dependencies.
@@ -13,10 +13,10 @@
 
 ## 🌟 Key Innovations
 
-1. **High-Precision Temporal Flaw Grounding ($\text{Macro IoU} = 0.7687$):**
-   Pinpoints exact delivery flaws (unnatural pauses, pacing rushes, monotone/erratic pitch, volume instability, and muffled articulation) with an average onset error of under 300 milliseconds across 54 annotated ground-truth flaw intervals.
-2. **Paired Contrastive Speech Dataset:**
-   6 canonical rhetorical speech texts paired with 18 baseline vs. flawed audio deliveries (24 high-fidelity 16kHz WAV files) and 54 grounded ground-truth flaw regions in `data/manifest.json`.
+1. **High-Precision Temporal Flaw Grounding ($\text{Macro IoU} = 0.8676$):**
+   Pinpoints exact delivery flaws (unnatural pauses, pacing rushes, monotone/erratic pitch, volume instability, and muffled articulation) with an average onset error of 181.1 milliseconds and offset error of 97.0 milliseconds across 54 annotated ground-truth flaw intervals.
+2. **Paired Contrastive Speech Dataset & Isolated TTS Expansion:**
+   6 canonical rhetorical speech texts paired with 18 baseline vs. flawed audio deliveries (24 high-fidelity 16kHz WAV files) and 54 grounded ground-truth flaw regions in `data/manifest.json`. Supplemented by an isolated TTS-assisted expansion pipeline in `data/tts_expanded/` with zero transcript leakage across splits.
 3. **100% Deterministic Local Rubric:**
    Standardized 5-dimension scoring (Pacing, Pauses, Energy, Pitch, Clarity) with zero non-deterministic LLM variance, zero API cost, and 100% offline execution.
 4. **Demographic Bias Protection:**
@@ -54,8 +54,13 @@ Run the comprehensive verification suite and temporal grounding benchmark:
 bash run_tests.sh
 ```
 This executes:
-- **Pytest Suite:** 34 unit, integration, and adversarial stress tests (100% pass rate).
+- **Pytest Suite:** 53 unit, integration, and adversarial stress tests (100% pass rate).
 - **Temporal IoU Benchmark:** Evaluates all 18 contrastive pairs and 54 ground-truth flaw intervals, confirming Macro IoU $\ge 0.65$ and mean onset/offset errors $\le 350\text{ms}$.
+
+To evaluate across all splits (Frozen Benchmark, Validation Split, Held-Out Test Split):
+```bash
+python tests/evaluate_temporal_iou.py --all
+```
 
 ### 3. Launch Interactive Web Dashboard
 ```bash
@@ -73,21 +78,21 @@ Evaluated over all 18 contrastive pairs and 54 ground-truth annotations in `data
 
 | Evaluation Metric | Acceptance Gate | VoxContrast Empirical Result | Verification Status |
 |---|---|---|---|
-| **Macro IoU** | $\ge 0.6500$ | **$0.7687$** | **PASSED (+11.87% margin)** |
-| **Mean Onset Error** | $\le 350.0\text{ ms}$ | **$323.7\text{ ms}$** | **PASSED (-26.3 ms margin)** |
-| **Mean Offset Error** | $\le 350.0\text{ ms}$ | **$340.6\text{ ms}$** | **$-9.4\text{ ms}$ (Passed)** |
-| **Precision @ $\text{IoU} \ge 0.5$** | — | **$0.4731$** | Verified |
-| **Recall @ $\text{IoU} \ge 0.5$** | — | **$0.8148$** | Verified (+20.4% gain) |
-| **F1-Score @ $\text{IoU} \ge 0.5$** | — | **$0.5986$** | Verified |
+| **Macro IoU** | $\ge 0.6500$ | **$0.8676$** | **PASSED (+21.76% margin)** |
+| **Mean Onset Error** | $\le 350.0\text{ ms}$ | **$181.1\text{ ms}$** | **PASSED (-168.9 ms margin)** |
+| **Mean Offset Error** | $\le 350.0\text{ ms}$ | **$97.0\text{ ms}$** | **PASSED (-253.0 ms margin)** |
+| **Precision @ $\text{IoU} \ge 0.5$** | — | **$0.8000$** | Verified (+32.69% gain) |
+| **Recall @ $\text{IoU} \ge 0.5$** | — | **$0.9630$** | Verified (+14.82% gain) |
+| **F1-Score @ $\text{IoU} \ge 0.5$** | — | **$0.8739$** | Verified (+27.53% gain) |
 
-### Flaw Category Breakdown
-- **Unnatural Pause:** $\text{IoU} = 0.9820$ | $\text{Onset Error} = 15.6\text{ ms}$
-- **Muffled Articulation:** $\text{IoU} = 0.9844$ | $\text{Onset Error} = 18.3\text{ ms}$
-- **Unstable Energy:** $\text{IoU} = 0.9182$ | $\text{Onset Error} = 136.7\text{ ms}$
-- **Monotone Pitch:** $\text{IoU} = 0.7874$ | $\text{Onset Error} = 453.3\text{ ms}$
-- **Monotone Energy:** $\text{IoU} = 0.7224$ | $\text{Onset Error} = 245.0\text{ ms}$
-- **Pitch Irregularity:** $\text{IoU} = 0.7125$ | $\text{Onset Error} = 395.0\text{ ms}$
-- **Excessive Speed:** $\text{IoU} = 0.4634$ | $\text{Onset Error} = 707.5\text{ ms}$
+### Flaw Category Breakdown (Frozen Benchmark)
+- **Muffled Articulation:** $\text{IoU} = 0.9844$ | $\text{Onset Error} = 18.3\text{ ms}$ | $\text{Offset Error} = 11.7\text{ ms}$
+- **Unnatural Pause:** $\text{IoU} = 0.9820$ | $\text{Onset Error} = 15.6\text{ ms}$ | $\text{Offset Error} = 25.6\text{ ms}$
+- **Unstable Energy:** $\text{IoU} = 0.9182$ | $\text{Onset Error} = 136.7\text{ ms}$ | $\text{Offset Error} = 83.3\text{ ms}$
+- **Excessive Speed:** $\text{IoU} = 0.9084$ | $\text{Onset Error} = 65.8\text{ ms}$ | $\text{Offset Error} = 97.0\text{ ms}$
+- **Monotone Pitch:** $\text{IoU} = 0.7874$ | $\text{Onset Error} = 453.3\text{ ms}$ | $\text{Offset Error} = 40.0\text{ ms}$
+- **Monotone Energy:** $\text{IoU} = 0.7224$ | $\text{Onset Error} = 245.0\text{ ms}$ | $\text{Offset Error} = 425.0\text{ ms}$
+- **Pitch Irregularity:** $\text{IoU} = 0.7125$ | $\text{Onset Error} = 395.0\text{ ms}$ | $\text{Offset Error} = 226.7\text{ ms}$
 
 ---
 
@@ -98,12 +103,13 @@ The dataset is organized in `data/`:
 - `data/audio/baselines/`: 6 pristine reference WAV recordings ($16\text{ kHz}$ mono).
 - `data/audio/flawed/`: 18 perturbed counter-utterance WAV recordings.
 - `data/annotations/`: 18 individual JSON annotation files.
+- `data/tts_expanded/`: Isolated TTS-assisted expansion dataset with validation and held-out test splits.
 
 ### 6 Rhetorical Speech Texts
 1. `speech_01_gettysburg`: Lincoln's Gettysburg Address (Rhetorical solemnity, measured cadence, 135 WPM).
 2. `speech_02_churchill`: Churchill's We Shall Fight on the Beaches (Perorational crescendo, heavy pause structure, 125 WPM).
 3. `speech_03_kennedy`: Kennedy's Inaugural Address (Antithetical balance, presidential oratory, 138 WPM).
-4. `speech_04_mlk`: MLK's I Have a Dream (Sermonic cadence, wide pitch dynamic range, 130 WPM).
+4. `speech_04_keynote`: Next-Gen AI Keynote Announcement (Technical evangelism, dynamic pacing, 140 WPM).
 5. `speech_05_defense`: Doctoral Dissertation Defense (Rapid technical exposition, polysyllabic density, 145 WPM).
 6. `speech_06_debate`: Policy Debate Opening (High-density structured arguments, staccato rhythm, 155 WPM).
 
@@ -200,7 +206,8 @@ The dataset is organized in `data/`:
 │   ├── audio/
 │   │   ├── baselines/        # 6 exemplary baseline WAV files
 │   │   └── flawed/           # 18 perturbed flawed WAV files
-│   └── manifest.json         # Master dataset catalog (54 flaw regions)
+│   ├── manifest.json         # Master dataset catalog (54 flaw regions)
+│   └── tts_expanded/         # TTS-assisted expansion (validation & held-out test splits)
 ├── docs/                     # Comprehensive Documentation Suite
 │   ├── ARCHITECTURE.md       # Detailed DSP & system architecture spec
 │   ├── DATASET.md            # Dataset provenance, schema, and flaws
@@ -215,16 +222,18 @@ The dataset is organized in `data/`:
 │       ├── services/         # Typed API client (api.ts)
 │       └── App.tsx           # Main dashboard orchestrator
 ├── scripts/                  # Synthesis & Data Generation
-│   └── generate_dataset.py   # High-fidelity glottal synthesis & flaw injector
+│   ├── generate_dataset.py   # High-fidelity glottal synthesis & flaw injector
+│   └── generate_tts_expansion.py # Modular TTS-assisted dataset expansion pipeline
 ├── tests/                    # Multi-Tiered Verification Suite
-│   ├── evaluate_temporal_iou.py # Temporal Grounding IoU Benchmark
+│   ├── evaluate_temporal_iou.py # Temporal Grounding IoU Benchmark (multi-split)
 │   ├── test_adversarial.py   # Silence, clipping, noise, transcript mismatches
 │   ├── test_alignment.py     # Alignment degradation contracts
 │   ├── test_api_integration.py # FastAPI endpoint integration tests
 │   ├── test_audio_io.py      # Resampling, mono downmix, SNR checks
 │   ├── test_detector.py      # Flaw detection & interval merging
 │   ├── test_features.py      # YIN pitch accuracy & pause detection
-│   └── test_rubric.py        # Strict determinism & speaker invariance
+│   ├── test_rubric.py        # Strict determinism & speaker invariance
+│   └── test_tts_expansion.py # TTS expansion, backend discovery & isolation tests
 ├── pytest.ini                # Pytest configuration
 ├── requirements.txt          # Python dependencies
 ├── run_demo.sh               # One-click dashboard launch script

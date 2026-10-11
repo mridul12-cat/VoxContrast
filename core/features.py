@@ -222,14 +222,15 @@ def estimate_local_wpm(
     f0_contour: list[float],
     time_stamps: list[float],
     time_step_s: float,
-    window_s: float = 1.0
+    window_s: float = 0.5
 ) -> list[float]:
     """
     Estimates local speech rate (WPM) over sliding windows using syllabic energy
-    peaks within voiced segments combined with inter-peak instantaneous rate.
+    peaks within voiced segments normalized by English syllable-per-word ratio (~1.45).
     """
     n_frames = len(rms_db)
     wpm_contour = [0.0] * n_frames
+    SYLLABLES_PER_WORD = 1.45
 
     # Find syllable nucleus candidates: local energy peaks in voiced regions
     peaks = []
@@ -259,10 +260,12 @@ def estimate_local_wpm(
         # Count peaks in [t - window_s/2, t + window_s/2]
         win_start = max(0.0, t - window_s / 2.0)
         win_end = min(time_stamps[-1], t + window_s / 2.0)
-        win_dur = max(0.2, win_end - win_start)
+        win_dur = max(0.15, win_end - win_start)
 
         cnt = sum(1 for pt in peak_times if win_start <= pt <= win_end)
-        dens_wpm = (cnt / win_dur) * 60.0
+        # Syllable density converted to words per minute
+        spm = (cnt / win_dur) * 60.0
+        dens_wpm = spm / SYLLABLES_PER_WORD
 
         # Inter-peak instantaneous rate
         prev_p = [pt for pt in peak_times if pt <= t]
@@ -270,10 +273,15 @@ def estimate_local_wpm(
         inst_wpm = 135.0
         if prev_p and next_p:
             delta = next_p[0] - prev_p[-1]
-            if delta < 0.70:
-                inst_wpm = 60.0 / delta
+            if 0.08 <= delta < 0.70:
+                inst_wpm = 60.0 / (delta * SYLLABLES_PER_WORD)
 
-        blended = max(dens_wpm, inst_wpm) if inst_wpm >= 170.0 else dens_wpm
+        # Blend instantaneous with window density when both confirm acceleration
+        if inst_wpm >= 175.0 and dens_wpm >= 160.0:
+            blended = 0.5 * dens_wpm + 0.5 * inst_wpm
+        else:
+            blended = dens_wpm
+
         wpm_contour[i] = round(float(np.clip(blended, 60.0, 320.0)), 1)
 
     return wpm_contour

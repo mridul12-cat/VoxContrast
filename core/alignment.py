@@ -182,9 +182,12 @@ def align_transcript_to_audio(
         if idx == len(trimmed_segs) - 1:
             cnt = word_count - assigned
         else:
-            weight = 0.5 * (p_cnt / total_p) + 0.5 * (seg_dur / total_dur)
-            cnt = int(round(word_count * weight))
-            cnt = max(1, min(word_count - assigned - (len(trimmed_segs) - 1 - idx), cnt))
+            if total_p == word_count:
+                cnt = p_cnt
+            else:
+                weight = 0.7 * (p_cnt / total_p) + 0.3 * (seg_dur / total_dur)
+                cnt = int(round(word_count * weight))
+                cnt = max(1, min(word_count - assigned - (len(trimmed_segs) - 1 - idx), cnt))
         seg_word_counts.append(cnt)
         assigned += cnt
 
@@ -241,27 +244,32 @@ def align_transcript_to_audio(
             bounds = [s_start]
             for j in range(1, k_words):
                 target_t = s_start + (s_end - s_start) * (cum_chars[j] / sub_total_chars)
-                min_a = bounds[-1] + 0.12
-                max_a = s_end - (k_words - j) * 0.12
+                min_a = bounds[-1] + 0.10
+                max_a = s_end - (k_words - j) * 0.10
                 if min_a >= max_a:
                     b_t = min_a
                 else:
-                    search_start = max(min_a, target_t - 0.25)
-                    search_end = min(max_a, target_t + 0.25)
-                    s_indices = [idx for idx, ts_v in enumerate(t_arr) if search_start <= ts_v <= search_end]
-                    if s_indices:
-                        b_t = t_arr[s_indices[np.argmin(rms_arr[s_indices])]]
+                    search_start = max(min_a, target_t - 0.20)
+                    search_end = min(max_a, target_t + 0.20)
+                    if search_start < search_end:
+                        s_indices = [idx for idx, ts_v in enumerate(t_arr) if search_start <= ts_v <= search_end]
+                        if s_indices:
+                            b_t = t_arr[s_indices[np.argmin(rms_arr[s_indices])]]
+                        else:
+                            b_t = max(min_a, min(max_a, target_t))
                     else:
-                        b_t = target_t
+                        b_t = min_a
                 bounds.append(round(float(b_t), 3))
             bounds.append(round(float(s_end), 3))
 
             for j in range(k_words):
+                ws = bounds[j]
+                we = max(ws + 0.10, bounds[j + 1])
                 aligned_words.append(
                     AlignedWord(
                         word=sub_words[j],
-                        start_s=bounds[j],
-                        end_s=bounds[j + 1],
+                        start_s=ws,
+                        end_s=we,
                         confidence=word_conf
                     )
                 )
@@ -297,17 +305,24 @@ def refine_speech_rate_with_alignment(
 
     n_words = len(aligned_words)
     word_wpms = []
+    BASELINE_RATE = 135.0
+
     for i in range(n_words):
+        w = aligned_words[i]
+        dur = max(0.06, w.end_s - w.start_s)
+        chars = max(2, len(w.word))
+        exp_d = (60.0 / BASELINE_RATE) * (0.6 + 0.08 * chars)
+        single_r = BASELINE_RATE * (exp_d / dur)
+
         # 3-word local context
         start_idx = max(0, i - 1)
         end_idx = min(n_words, i + 2)
         ctx_words = aligned_words[start_idx:end_idx]
-        ctx_dur = max(0.12, sum(w.end_s - w.start_s for w in ctx_words))
-        wpm = (len(ctx_words) / ctx_dur) * 60.0
-        # Instantaneous single-word rate
-        single_dur = max(0.08, aligned_words[i].end_s - aligned_words[i].start_s)
-        single_wpm = (1.0 / single_dur) * 60.0
-        blended = max(wpm, single_wpm) if single_wpm >= 170.0 else wpm
+        ctx_dur = max(0.12, ctx_words[-1].end_s - ctx_words[0].start_s)
+        ctx_exp = sum((60.0 / BASELINE_RATE) * (0.6 + 0.08 * max(2, len(cw.word))) for cw in ctx_words)
+        ctx_r = BASELINE_RATE * (ctx_exp / ctx_dur)
+
+        blended = 0.5 * single_r + 0.5 * ctx_r
         word_wpms.append(float(np.clip(blended, 60.0, 320.0)))
 
     time_stamps = time_series.time_stamps
@@ -320,14 +335,17 @@ def refine_speech_rate_with_alignment(
             refined.append(0.0)
             continue
 
-        active_wpm = orig_wpm[idx] if idx < len(orig_wpm) else 0.0
+        frame_wpm = None
         for i, w in enumerate(aligned_words):
-            w_reach = min(w.end_s + 0.10, aligned_words[i + 1].start_s) if i + 1 < n_words else w.end_s + 0.10
-            if w.start_s <= t <= w_reach:
-                active_wpm = max(active_wpm, word_wpms[i])
+            if w.start_s <= t <= w.end_s:
+                frame_wpm = word_wpms[i]
                 break
-            elif t < w.start_s:
-                break
-        refined.append(round(active_wpm, 1))
+
+        if frame_wpm is not None:
+            refined.append(round(frame_wpm, 1))
+        else:
+            # Between words or outside aligned spans, use acoustic rate
+            active_wpm = orig_wpm[idx] if idx < len(orig_wpm) else 0.0
+            refined.append(round(active_wpm, 1))
 
     return refined

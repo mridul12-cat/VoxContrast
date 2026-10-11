@@ -1,0 +1,35 @@
+{
+  "pair_id": "pair_speech_08_curie_unstable_energy_2",
+  "text_id": "speech_08_curie",
+  "split": "validation",
+  "category": "unstable_energy",
+  "severity": "severe",
+  "duration_s": 13.383,
+  "backend_used": "macos_say",
+  "voice_model": "Samantha",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_08_curie_unstable_energy_2_01",
+      "category": "unstable_energy",
+      "start_s": 3.91,
+      "end_s": 7.48,
+      "intended_start_s": 3.91,
+      "intended_end_s": 7.48,
+      "transcript_slice": "persisting unaltered through all chemical transformations",
+      "observed_value": 18.0,
+      "baseline_value": 6.0,
+      "severity": "severe",
+      "annotation_method": "tts_expansion_unstable_energy",
+      "validation_status": "CONFIRMED",
+      "acoustic_details": {
+        "average_wpm": 145.0,
+        "pitch_semitone_std": 2.54,
+        "energy_std_db": 6.8,
+        "total_pause_duration_s": 0.0,
+        "pause_count": 0,
+        "slice_energy_std_db": 9.03
+      }
+    }
+  ]
+}

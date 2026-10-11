@@ -1,0 +1,35 @@
+{
+  "pair_id": "pair_speech_08_curie_monotone_energy_3",
+  "text_id": "speech_08_curie",
+  "split": "validation",
+  "category": "monotone_energy",
+  "severity": "moderate",
+  "duration_s": 13.383,
+  "backend_used": "macos_say",
+  "voice_model": "Samantha",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_08_curie_monotone_energy_3_01",
+      "category": "monotone_energy",
+      "start_s": 3.91,
+      "end_s": 7.48,
+      "intended_start_s": 3.91,
+      "intended_end_s": 7.48,
+      "transcript_slice": "persisting unaltered through all chemical transformations",
+      "observed_value": 1.65,
+      "baseline_value": 5.5,
+      "severity": "moderate",
+      "annotation_method": "tts_expansion_monotone_energy",
+      "validation_status": "CONFIRMED",
+      "acoustic_details": {
+        "average_wpm": 144.6,
+        "pitch_semitone_std": 2.59,
+        "energy_std_db": 5.0,
+        "total_pause_duration_s": 0.0,
+        "pause_count": 0,
+        "slice_energy_std_db": 1.01
+      }
+    }
+  ]
+}

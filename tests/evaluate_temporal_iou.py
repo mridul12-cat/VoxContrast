@@ -1,11 +1,15 @@
 """
 VoxContrast - Temporal Flaw Grounding IoU Benchmark
-Evaluates temporal interval localization accuracy against ground-truth annotations in data/manifest.json.
+Evaluates temporal interval localization accuracy against ground-truth annotations.
+Supports original frozen benchmark (data/manifest.json) and TTS-assisted expansion splits
+(validation, held_out_test in data/tts_expanded/manifest.json).
 Calculates Macro IoU, Precision@0.5, Recall@0.5, and Mean Onset/Offset errors.
 """
 
 from __future__ import annotations
 
+import argparse
+import json
 import os
 import sys
 
@@ -14,11 +18,12 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-import json
 import numpy as np
 
 from core.analyzer import analyze_speech
 from backend.config import MANIFEST_PATH, DATA_DIR
+
+TTS_MANIFEST_PATH = os.path.join(REPO_ROOT, "data", "tts_expanded", "manifest.json")
 
 
 def compute_interval_iou(start1: float, end1: float, start2: float, end2: float) -> float:
@@ -34,15 +39,26 @@ def compute_interval_iou(start1: float, end1: float, start2: float, end2: float)
     return float(intersection_len / union_len)
 
 
-def run_temporal_grounding_benchmark() -> dict:
-    """Executes benchmark over all 18 contrastive pairs and 54 annotations."""
-    if not os.path.exists(MANIFEST_PATH):
-        raise FileNotFoundError(f"Manifest not found at {MANIFEST_PATH}")
+def run_temporal_grounding_benchmark(
+    manifest_path: str = MANIFEST_PATH,
+    split: str | None = None,
+    confirmed_only: bool = True
+) -> dict:
+    """
+    Executes benchmark over contrastive pairs in the given manifest and optional split.
+    
+    Parameters:
+    - manifest_path: Path to dataset manifest JSON. Defaults to data/manifest.json.
+    - split: Specific split ('validation', 'held_out_test') or None for all pairs.
+    - confirmed_only: If True, evaluates only flaws marked CONFIRMED (or with no status).
+    """
+    if not os.path.exists(manifest_path):
+        raise FileNotFoundError(f"Manifest not found at {manifest_path}")
 
-    with open(MANIFEST_PATH, "r") as f:
+    with open(manifest_path, "r") as f:
         manifest = json.load(f)
 
-    speech_texts = {s["text_id"]: s["canonical_transcript"] for s in manifest["speech_texts"]}
+    speech_texts = {s["text_id"]: s["canonical_transcript"] for s in manifest.get("speech_texts", [])}
 
     category_stats: dict[str, dict] = {}
     total_ious = []
@@ -53,15 +69,43 @@ def run_temporal_grounding_benchmark() -> dict:
     false_positives_05 = 0
     false_negatives_05 = 0
 
-    base_dir = os.path.dirname(DATA_DIR)
+    valid_pair_ids = None
+    if split is not None and "splits" in manifest and split in manifest["splits"]:
+        valid_pair_ids = set(manifest["splits"][split])
 
-    for pair in manifest["pairs"]:
+    for pair in manifest.get("pairs", []):
         pair_id = pair["pair_id"]
+        pair_split = pair.get("split")
+
+        if split is not None:
+            if valid_pair_ids is not None and pair_id not in valid_pair_ids:
+                continue
+            elif valid_pair_ids is None and pair_split != split:
+                continue
+
         cat = pair["flaw_category"]
         text_id = pair["text_id"]
         transcript = speech_texts.get(text_id, "")
-        flawed_audio_path = os.path.join(base_dir, pair["flawed_audio"])
-        gt_flaws = pair["ground_truth_flaws"]
+
+        # Resolve audio path relative to REPO_ROOT or manifest dir
+        flawed_rel = pair["flawed_audio"]
+        if os.path.isabs(flawed_rel):
+            flawed_audio_path = flawed_rel
+        elif os.path.exists(os.path.join(REPO_ROOT, flawed_rel)):
+            flawed_audio_path = os.path.join(REPO_ROOT, flawed_rel)
+        elif os.path.exists(os.path.join(os.path.dirname(manifest_path), flawed_rel)):
+            flawed_audio_path = os.path.join(os.path.dirname(manifest_path), flawed_rel)
+        else:
+            flawed_audio_path = os.path.join(REPO_ROOT, flawed_rel)
+
+        all_gt_flaws = pair.get("ground_truth_flaws", [])
+        if confirmed_only:
+            gt_flaws = [g for g in all_gt_flaws if g.get("validation_status", "CONFIRMED") == "CONFIRMED"]
+        else:
+            gt_flaws = all_gt_flaws
+
+        if not gt_flaws:
+            continue
 
         if not os.path.exists(flawed_audio_path):
             continue
@@ -95,7 +139,8 @@ def run_temporal_grounding_benchmark() -> dict:
                 # Category match
                 is_cat_match = (
                     d.category == gt["category"] or
-                    {d.category, gt["category"]} <= {"muffled_articulation", "vocal_clarity"}
+                    {d.category, gt["category"]} <= {"muffled_articulation", "vocal_clarity"} or
+                    {d.category, gt["category"]} <= {"slow_speech", "slow_delivery"}
                 )
                 if not is_cat_match:
                     continue
@@ -147,7 +192,10 @@ def run_temporal_grounding_benchmark() -> dict:
         else 0.0
     )
 
+    split_label = split if split else ("all_pairs" if "splits" in manifest else "original_benchmark")
     results = {
+        "split": split_label,
+        "manifest_path": manifest_path,
         "macro_iou": round(macro_iou, 4),
         "mean_onset_error_s": round(mean_onset_err, 4),
         "mean_offset_error_s": round(mean_offset_err, 4),
@@ -169,20 +217,14 @@ def run_temporal_grounding_benchmark() -> dict:
     return results
 
 
-def test_temporal_grounding_acceptance_gate():
-    """Pytest test asserting that Macro IoU and error thresholds meet acceptance gate."""
-    benchmark = run_temporal_grounding_benchmark()
-    # Acceptance gate: Macro IoU >= 0.65; Onset/Offset error < 0.35s (350ms)
-    assert benchmark["macro_iou"] >= 0.65, f"Macro IoU {benchmark['macro_iou']} below 0.65 gate"
-    assert benchmark["mean_onset_error_s"] <= 0.35, f"Onset error {benchmark['mean_onset_error_s']}s exceeds 350ms gate"
-    assert benchmark["mean_offset_error_s"] <= 0.35, f"Offset error {benchmark['mean_offset_error_s']}s exceeds 350ms gate"
-
-
-if __name__ == "__main__":
-    res = run_temporal_grounding_benchmark()
-    print("=" * 60)
-    print("VoxContrast Temporal Grounding Benchmark Results")
-    print("=" * 60)
+def print_benchmark_report(res: dict, title: str | None = None) -> None:
+    """Prints a formatted evaluation report for a benchmark result."""
+    heading = title or f"VoxContrast Temporal Grounding Results [{res.get('split', 'default')}]"
+    print("=" * 66)
+    print(heading)
+    print("=" * 66)
+    print(f"Manifest:               {res.get('manifest_path', 'unknown')}")
+    print(f"Split:                  {res.get('split', 'all')}")
     print(f"Macro IoU:              {res['macro_iou']:.4f}")
     print(f"Mean Onset Error:       {res['mean_onset_error_s']*1000:.1f} ms")
     print(f"Mean Offset Error:      {res['mean_offset_error_s']*1000:.1f} ms")
@@ -190,8 +232,94 @@ if __name__ == "__main__":
     print(f"Recall @ IoU >= 0.5:    {res['recall_at_05_iou']:.4f}")
     print(f"F1 @ IoU >= 0.5:        {res['f1_at_05_iou']:.4f}")
     print(f"Total Evaluated Flaws:  {res['total_ground_truth_flaws']}")
-    print("-" * 60)
+    print("-" * 66)
     print("Category Breakdown:")
     for cat, b in res["category_breakdown"].items():
         print(f"  - {cat:22s}: IoU={b['mean_iou']:.4f}, OnsetErr={b['mean_onset_err_s']*1000:.1f}ms, Count={b['gt_count']}")
-    print("=" * 60)
+    print("=" * 66)
+    print()
+
+
+def print_comparative_table(results_list: list[dict]) -> None:
+    """Prints a comparative markdown table across multiple evaluated splits."""
+    print("### Multi-Split Temporal Grounding Benchmark Comparison")
+    print()
+    print("| Split | Flaws | Macro IoU | Onset Error | Offset Error | Prec@0.5 | Rec@0.5 | F1@0.5 |")
+    print("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |")
+    for r in results_list:
+        split_name = r.get("split", "unknown")
+        cnt = r["total_ground_truth_flaws"]
+        iou = f"{r['macro_iou']:.4f}"
+        onset = f"{r['mean_onset_error_s']*1000:.1f} ms"
+        offset = f"{r['mean_offset_error_s']*1000:.1f} ms"
+        p = f"{r['precision_at_05_iou']:.4f}"
+        rec = f"{r['recall_at_05_iou']:.4f}"
+        f1 = f"{r['f1_at_05_iou']:.4f}"
+        print(f"| **{split_name}** | {cnt} | **{iou}** | {onset} | {offset} | {p} | {rec} | {f1} |")
+    print()
+
+
+def test_temporal_grounding_acceptance_gate():
+    """Pytest test asserting that Macro IoU and error thresholds meet acceptance gate on frozen benchmark."""
+    benchmark = run_temporal_grounding_benchmark(MANIFEST_PATH)
+    # Acceptance gate: Macro IoU >= 0.65; Onset/Offset error < 0.35s (350ms)
+    assert benchmark["macro_iou"] >= 0.65, f"Macro IoU {benchmark['macro_iou']} below 0.65 gate"
+    assert benchmark["mean_onset_error_s"] <= 0.35, f"Onset error {benchmark['mean_onset_error_s']}s exceeds 350ms gate"
+    assert benchmark["mean_offset_error_s"] <= 0.35, f"Offset error {benchmark['mean_offset_error_s']}s exceeds 350ms gate"
+
+
+def main():
+    parser = argparse.ArgumentParser(description="VoxContrast Temporal Grounding Benchmark")
+    parser.add_argument("--manifest", type=str, default=MANIFEST_PATH, help="Path to manifest JSON")
+    parser.add_argument("--split", type=str, default=None, help="Split name to filter (e.g. validation, held_out_test)")
+    parser.add_argument("--all", action="store_true", help="Evaluate across original benchmark, validation, and held_out_test")
+    parser.add_argument("--include-uncertain", action="store_true", help="Include unconfirmed/uncertain flaws in evaluation")
+
+    args = parser.parse_args()
+    confirmed_only = not args.include_uncertain
+
+    if args.all:
+        print("Running comprehensive multi-split evaluation...\n")
+        benchmarks = []
+        # 1. Original Frozen Benchmark
+        res_frozen = run_temporal_grounding_benchmark(
+            manifest_path=MANIFEST_PATH,
+            split=None,
+            confirmed_only=confirmed_only
+        )
+        res_frozen["split"] = "original_frozen_benchmark"
+        print_benchmark_report(res_frozen, "Original Frozen Benchmark (data/manifest.json)")
+        benchmarks.append(res_frozen)
+
+        # 2. TTS Validation Split (if exists)
+        if os.path.exists(TTS_MANIFEST_PATH):
+            res_val = run_temporal_grounding_benchmark(
+                manifest_path=TTS_MANIFEST_PATH,
+                split="validation",
+                confirmed_only=confirmed_only
+            )
+            print_benchmark_report(res_val, "TTS Expanded - Validation Split (speech_07_roosevelt, speech_08_curie)")
+            benchmarks.append(res_val)
+
+            # 3. TTS Held-Out Test Split (if exists)
+            res_test = run_temporal_grounding_benchmark(
+                manifest_path=TTS_MANIFEST_PATH,
+                split="held_out_test",
+                confirmed_only=confirmed_only
+            )
+            print_benchmark_report(res_test, "TTS Expanded - Held-Out Test Split (speech_09_mandela, speech_10_turing)")
+            benchmarks.append(res_test)
+
+        print_comparative_table(benchmarks)
+
+    else:
+        res = run_temporal_grounding_benchmark(
+            manifest_path=args.manifest,
+            split=args.split,
+            confirmed_only=confirmed_only
+        )
+        print_benchmark_report(res)
+
+
+if __name__ == "__main__":
+    main()
