@@ -1,0 +1,42 @@
+{
+  "pair_id": "pair_speech_04_keynote_monotone_pitch_2",
+  "text_id": "speech_04_keynote",
+  "category": "monotone_pitch",
+  "severity": "severe",
+  "duration_s": 14.61,
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_2_01",
+      "category": "monotone_pitch",
+      "start_s": 0.73,
+      "end_s": 2.53,
+      "transcript_slice": "we are announcing an",
+      "observed_value": 0.2,
+      "baseline_value": 2.5,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_monotone_pitch"
+    },
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_2_02",
+      "category": "monotone_pitch",
+      "start_s": 3.57,
+      "end_s": 5.72,
+      "transcript_slice": "architecture that unifies real",
+      "observed_value": 0.2,
+      "baseline_value": 2.5,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_monotone_pitch"
+    },
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_2_03",
+      "category": "monotone_pitch",
+      "start_s": 7.34,
+      "end_s": 9.38,
+      "transcript_slice": "synthesis and neural speech",
+      "observed_value": 0.2,
+      "baseline_value": 2.5,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_monotone_pitch"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "pair_id": "pair_speech_06_debate_excessive_speed_1",
+  "text_id": "speech_06_debate",
+  "category": "excessive_speed",
+  "severity": "severe",
+  "duration_s": 14.19,
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_06_debate_excessive_speed_1_01",
+      "category": "excessive_speed",
+      "start_s": 0.66,
+      "end_s": 1.91,
+      "transcript_slice": "affirmative contention fails on",
+      "observed_value": 235.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    },
+    {
+      "flaw_id": "gt_pair_speech_06_debate_excessive_speed_1_02",
+      "category": "excessive_speed",
+      "start_s": 3.0,
+      "end_s": 4.2,
+      "transcript_slice": "warrants: first, the empirical",
+      "observed_value": 240.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    },
+    {
+      "flaw_id": "gt_pair_speech_06_debate_excessive_speed_1_03",
+      "category": "excessive_speed",
+      "start_s": 6.16,
+      "end_s": 7.33,
+      "transcript_slice": "their model; second, their",
+      "observed_value": 230.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    }
+  ]
+}

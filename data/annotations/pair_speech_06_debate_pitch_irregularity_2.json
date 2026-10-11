@@ -1,0 +1,42 @@
+{
+  "pair_id": "pair_speech_06_debate_pitch_irregularity_2",
+  "text_id": "speech_06_debate",
+  "category": "pitch_irregularity",
+  "severity": "moderate",
+  "duration_s": 16.98,
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_06_debate_pitch_irregularity_2_01",
+      "category": "pitch_irregularity",
+      "start_s": 0.66,
+      "end_s": 2.85,
+      "transcript_slice": "affirmative contention fails on",
+      "observed_value": 4.5,
+      "baseline_value": 1.8,
+      "severity": "moderate",
+      "annotation_method": "grounded_flaw_injection_pitch_irregularity"
+    },
+    {
+      "flaw_id": "gt_pair_speech_06_debate_pitch_irregularity_2_02",
+      "category": "pitch_irregularity",
+      "start_s": 3.96,
+      "end_s": 6.11,
+      "transcript_slice": "warrants: first, the empirical",
+      "observed_value": 4.5,
+      "baseline_value": 1.8,
+      "severity": "moderate",
+      "annotation_method": "grounded_flaw_injection_pitch_irregularity"
+    },
+    {
+      "flaw_id": "gt_pair_speech_06_debate_pitch_irregularity_2_03",
+      "category": "pitch_irregularity",
+      "start_s": 8.09,
+      "end_s": 10.09,
+      "transcript_slice": "their model; second, their",
+      "observed_value": 4.5,
+      "baseline_value": 1.8,
+      "severity": "moderate",
+      "annotation_method": "grounded_flaw_injection_pitch_irregularity"
+    }
+  ]
+}

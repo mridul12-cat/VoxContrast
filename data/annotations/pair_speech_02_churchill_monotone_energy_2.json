@@ -1,0 +1,42 @@
+{
+  "pair_id": "pair_speech_02_churchill_monotone_energy_2",
+  "text_id": "speech_02_churchill",
+  "category": "monotone_energy",
+  "severity": "moderate",
+  "duration_s": 16.28,
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_02_churchill_monotone_energy_2_01",
+      "category": "monotone_energy",
+      "start_s": 0.63,
+      "end_s": 2.35,
+      "transcript_slice": "shall fight on the",
+      "observed_value": 0.75,
+      "baseline_value": 5.5,
+      "severity": "moderate",
+      "annotation_method": "grounded_flaw_injection_monotone_energy"
+    },
+    {
+      "flaw_id": "gt_pair_speech_02_churchill_monotone_energy_2_02",
+      "category": "monotone_energy",
+      "start_s": 3.36,
+      "end_s": 5.08,
+      "transcript_slice": "shall fight on the",
+      "observed_value": 0.75,
+      "baseline_value": 5.5,
+      "severity": "moderate",
+      "annotation_method": "grounded_flaw_injection_monotone_energy"
+    },
+    {
+      "flaw_id": "gt_pair_speech_02_churchill_monotone_energy_2_03",
+      "category": "monotone_energy",
+      "start_s": 6.91,
+      "end_s": 8.6,
+      "transcript_slice": "we shall fight in",
+      "observed_value": 0.75,
+      "baseline_value": 5.5,
+      "severity": "moderate",
+      "annotation_method": "grounded_flaw_injection_monotone_energy"
+    }
+  ]
+}

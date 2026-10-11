@@ -1,0 +1,42 @@
+{
+  "pair_id": "pair_speech_01_gettysburg_excessive_speed_1",
+  "text_id": "speech_01_gettysburg",
+  "category": "excessive_speed",
+  "severity": "severe",
+  "duration_s": 13.01,
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_01_gettysburg_excessive_speed_1_01",
+      "category": "excessive_speed",
+      "start_s": 0.7,
+      "end_s": 1.74,
+      "transcript_slice": "score and seven years",
+      "observed_value": 235.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    },
+    {
+      "flaw_id": "gt_pair_speech_01_gettysburg_excessive_speed_1_02",
+      "category": "excessive_speed",
+      "start_s": 2.59,
+      "end_s": 3.67,
+      "transcript_slice": "fathers brought forth on",
+      "observed_value": 240.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    },
+    {
+      "flaw_id": "gt_pair_speech_01_gettysburg_excessive_speed_1_03",
+      "category": "excessive_speed",
+      "start_s": 5.41,
+      "end_s": 6.51,
+      "transcript_slice": "a new nation conceived",
+      "observed_value": 230.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    }
+  ]
+}

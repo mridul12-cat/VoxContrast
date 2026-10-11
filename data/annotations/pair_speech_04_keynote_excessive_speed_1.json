@@ -1,0 +1,42 @@
+{
+  "pair_id": "pair_speech_04_keynote_excessive_speed_1",
+  "text_id": "speech_04_keynote",
+  "category": "excessive_speed",
+  "severity": "severe",
+  "duration_s": 11.98,
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_1_01",
+      "category": "excessive_speed",
+      "start_s": 0.73,
+      "end_s": 1.75,
+      "transcript_slice": "we are announcing an",
+      "observed_value": 235.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    },
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_1_02",
+      "category": "excessive_speed",
+      "start_s": 2.78,
+      "end_s": 3.98,
+      "transcript_slice": "architecture that unifies real",
+      "observed_value": 240.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    },
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_1_03",
+      "category": "excessive_speed",
+      "start_s": 5.58,
+      "end_s": 6.77,
+      "transcript_slice": "synthesis and neural speech",
+      "observed_value": 230.0,
+      "baseline_value": 135.0,
+      "severity": "severe",
+      "annotation_method": "grounded_flaw_injection_excessive_speed"
+    }
+  ]
+}
