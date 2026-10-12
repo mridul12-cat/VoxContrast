@@ -7,7 +7,7 @@ __pycache__/
 env/
 build/
 develop-eggs/
-dist/
+/dist/
 downloads/
 eggs/
 .eggs/
@@ -30,7 +30,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-frontend/dist/
+frontend/dist/*
+!frontend/dist/index.html
 frontend/build/
 
 # IDE / OS

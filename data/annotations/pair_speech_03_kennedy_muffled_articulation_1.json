@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_03_kennedy_muffled_articulation_1",
+  "text_id": "speech_03_kennedy",
+  "split": "train_dev",
+  "category": "muffled_articulation",
+  "severity": "severe",
+  "duration_s": 20.56,
+  "baseline_audio_file": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_03_kennedy_muffled_articulation_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_03_kennedy_muffled_articulation_1_01",
+      "category": "muffled_articulation",
+      "start_s": 14.55,
+      "end_s": 15.9,
+      "transcript_slice": "America will do for",
+      "observed_value": 736.3,
+      "baseline_value": 2100.0,
+      "unit": "Hz",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_muffled_articulation",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

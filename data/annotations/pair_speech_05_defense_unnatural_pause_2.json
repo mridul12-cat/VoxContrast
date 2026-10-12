@@ -1,42 +1,26 @@
 {
   "pair_id": "pair_speech_05_defense_unnatural_pause_2",
   "text_id": "speech_05_defense",
+  "split": "final_test",
   "category": "unnatural_pause",
-  "severity": "moderate",
-  "duration_s": 21.09,
+  "severity": "severe",
+  "duration_s": 18.16,
+  "baseline_audio_file": "data/audio/baselines/speech_05_defense_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_05_defense_unnatural_pause_severe.wav",
+  "validation_status": "CONFIRMED",
   "ground_truth_flaws": [
     {
       "flaw_id": "gt_pair_speech_05_defense_unnatural_pause_2_01",
       "category": "unnatural_pause",
-      "start_s": 0.62,
-      "end_s": 2.82,
-      "transcript_slice": "[Pause between 'Our' and 'empirical']",
-      "observed_value": 2.2,
-      "baseline_value": 0.65,
-      "severity": "moderate",
-      "annotation_method": "acoustic_energy_silence_boundary"
-    },
-    {
-      "flaw_id": "gt_pair_speech_05_defense_unnatural_pause_2_02",
-      "category": "unnatural_pause",
-      "start_s": 6.69,
-      "end_s": 9.19,
-      "transcript_slice": "[Pause between 'significant' and 'reduction']",
-      "observed_value": 2.5,
-      "baseline_value": 0.65,
-      "severity": "moderate",
-      "annotation_method": "acoustic_energy_silence_boundary"
-    },
-    {
-      "flaw_id": "gt_pair_speech_05_defense_unnatural_pause_2_03",
-      "category": "unnatural_pause",
-      "start_s": 12.52,
-      "end_s": 14.62,
-      "transcript_slice": "[Pause between 'rigorous' and 'mathematical']",
-      "observed_value": 2.1,
-      "baseline_value": 0.65,
-      "severity": "moderate",
-      "annotation_method": "acoustic_energy_silence_boundary"
+      "start_s": 6.05,
+      "end_s": 6.7,
+      "transcript_slice": "reduction in latency",
+      "observed_value": 0.65,
+      "baseline_value": 0.4,
+      "unit": "s",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_unnatural_pause",
+      "validation_status": "CONFIRMED"
     }
   ]
 }

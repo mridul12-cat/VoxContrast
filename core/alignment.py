@@ -299,13 +299,23 @@ def refine_speech_rate_with_alignment(
     duration_s: float,
     window_s: float = 1.0
 ) -> list[float]:
-    """Refines frame-by-frame speech rate (WPM) using aligned word durations and local context."""
+    """
+    Refines frame-by-frame speech rate (WPM) using aligned words and multi-word
+    phrase context. Regularizes short function words to local phrase rate to
+    prevent artificial spikes on normal connected speech.
+    """
     if not aligned_words:
         return time_series.speech_rate_wpm
 
     n_words = len(aligned_words)
     word_wpms = []
     BASELINE_RATE = 135.0
+
+    FUNCTION_WORDS = {
+        "a", "an", "the", "of", "to", "in", "on", "at", "by", "for",
+        "with", "and", "or", "but", "is", "it", "as", "be", "that",
+        "this", "my", "we", "our", "so", "let", "me"
+    }
 
     for i in range(n_words):
         w = aligned_words[i]
@@ -321,6 +331,11 @@ def refine_speech_rate_with_alignment(
         ctx_dur = max(0.12, ctx_words[-1].end_s - ctx_words[0].start_s)
         ctx_exp = sum((60.0 / BASELINE_RATE) * (0.6 + 0.08 * max(2, len(cw.word))) for cw in ctx_words)
         ctx_r = BASELINE_RATE * (ctx_exp / ctx_dur)
+
+        # If short function word, bound single_r to phrase rate
+        w_clean = re.sub(r"[^\w]", "", w.word.lower())
+        if w_clean in FUNCTION_WORDS and dur < 0.20:
+            single_r = min(single_r, max(BASELINE_RATE, ctx_r))
 
         blended = 0.5 * single_r + 0.5 * ctx_r
         word_wpms.append(float(np.clip(blended, 60.0, 320.0)))

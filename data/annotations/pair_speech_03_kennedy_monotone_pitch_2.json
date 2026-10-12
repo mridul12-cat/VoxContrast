@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_03_kennedy_monotone_pitch_2",
+  "text_id": "speech_03_kennedy",
+  "split": "train_dev",
+  "category": "monotone_pitch",
+  "severity": "severe",
+  "duration_s": 16.08,
+  "baseline_audio_file": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_03_kennedy_monotone_pitch_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_03_kennedy_monotone_pitch_2_01",
+      "category": "monotone_pitch",
+      "start_s": 7.4,
+      "end_s": 9.4,
+      "transcript_slice": "country My fellow citizens of the",
+      "observed_value": 2.14,
+      "baseline_value": 3.5,
+      "unit": "ST",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_pitch",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

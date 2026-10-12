@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_06_debate_excessive_speed_2",
+  "text_id": "speech_06_debate",
+  "split": "final_test",
+  "category": "excessive_speed",
+  "severity": "severe",
+  "duration_s": 14.32,
+  "baseline_audio_file": "data/audio/baselines/speech_06_debate_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_06_debate_excessive_speed_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_06_debate_excessive_speed_2_01",
+      "category": "excessive_speed",
+      "start_s": 9.75,
+      "end_s": 10.1,
+      "transcript_slice": "delay and",
+      "observed_value": 188.8,
+      "baseline_value": 140.0,
+      "unit": "WPM",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

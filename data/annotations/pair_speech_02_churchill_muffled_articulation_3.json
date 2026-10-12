@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_02_churchill_muffled_articulation_3",
+  "text_id": "speech_02_churchill",
+  "split": "train_dev",
+  "category": "muffled_articulation",
+  "severity": "severe",
+  "duration_s": 18.64,
+  "baseline_audio_file": "data/audio/baselines/speech_02_churchill_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_02_churchill_muffled_articulation_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_02_churchill_muffled_articulation_3_01",
+      "category": "muffled_articulation",
+      "start_s": 4.5,
+      "end_s": 5.8,
+      "transcript_slice": "fight on the landing",
+      "observed_value": 741.8,
+      "baseline_value": 2100.0,
+      "unit": "Hz",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_muffled_articulation",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

@@ -1,42 +1,26 @@
 {
   "pair_id": "pair_speech_01_gettysburg_unnatural_pause_2",
   "text_id": "speech_01_gettysburg",
+  "split": "train_dev",
   "category": "unnatural_pause",
   "severity": "severe",
-  "duration_s": 21.65,
+  "duration_s": 18.0,
+  "baseline_audio_file": "data/audio/baselines/speech_01_gettysburg_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_01_gettysburg_unnatural_pause_severe.wav",
+  "validation_status": "CONFIRMED",
   "ground_truth_flaws": [
     {
       "flaw_id": "gt_pair_speech_01_gettysburg_unnatural_pause_2_01",
       "category": "unnatural_pause",
-      "start_s": 0.66,
-      "end_s": 2.86,
-      "transcript_slice": "[Pause between 'Four' and 'score']",
-      "observed_value": 2.2,
-      "baseline_value": 0.65,
+      "start_s": 17.4,
+      "end_s": 17.95,
+      "transcript_slice": "equal",
+      "observed_value": 0.55,
+      "baseline_value": 0.4,
+      "unit": "s",
       "severity": "severe",
-      "annotation_method": "acoustic_energy_silence_boundary"
-    },
-    {
-      "flaw_id": "gt_pair_speech_01_gettysburg_unnatural_pause_2_02",
-      "category": "unnatural_pause",
-      "start_s": 5.55,
-      "end_s": 8.05,
-      "transcript_slice": "[Pause between 'our' and 'fathers']",
-      "observed_value": 2.5,
-      "baseline_value": 0.65,
-      "severity": "severe",
-      "annotation_method": "acoustic_energy_silence_boundary"
-    },
-    {
-      "flaw_id": "gt_pair_speech_01_gettysburg_unnatural_pause_2_03",
-      "category": "unnatural_pause",
-      "start_s": 11.1,
-      "end_s": 13.2,
-      "transcript_slice": "[Pause between 'continent' and 'a']",
-      "observed_value": 2.1,
-      "baseline_value": 0.65,
-      "severity": "severe",
-      "annotation_method": "acoustic_energy_silence_boundary"
+      "annotation_method": "acoustic_alignment_contrastive_grounding_unnatural_pause",
+      "validation_status": "CONFIRMED"
     }
   ]
 }

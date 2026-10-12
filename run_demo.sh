@@ -27,8 +27,8 @@ HOST="127.0.0.1"
 
 echo "Verifying dataset manifest..."
 if [ ! -f "data/manifest.json" ]; then
-    echo "Manifest not found. Generating contrastive speech dataset..."
-    $PYTHON scripts/generate_dataset.py
+    echo "Manifest not found: data/manifest.json is required."
+    exit 1
 fi
 
 echo ""

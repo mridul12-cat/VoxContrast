@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 import numpy as np
@@ -16,7 +17,8 @@ from core.schemas import AnalysisResponse, ComparisonResponse
 def analyze_speech(
     audio_input: bytes | str | np.ndarray,
     transcript: str = "",
-    analysis_id: str | None = None
+    analysis_id: str | None = None,
+    is_baseline: bool | None = None
 ) -> AnalysisResponse:
     """
     Executes full end-to-end speech evaluation pipeline:
@@ -29,6 +31,18 @@ def analyze_speech(
     """
     if analysis_id is None:
         analysis_id = f"ana_{uuid.uuid4().hex[:10]}"
+
+    if is_baseline is None:
+        if isinstance(audio_input, str):
+            base_name = os.path.basename(audio_input).lower()
+            if "baseline" in base_name or "/baselines/" in audio_input.lower():
+                is_baseline = True
+            else:
+                is_baseline = False
+        elif analysis_id and "baseline" in analysis_id.lower():
+            is_baseline = True
+        else:
+            is_baseline = False
 
     # Stage 1: Audio Ingestion & Normalization
     audio_16k, metadata = process_audio(audio_input)
@@ -49,18 +63,22 @@ def analyze_speech(
     speaker_baseline = SpeakerNormalizer.compute_speaker_baseline(time_series)
 
     # Stage 5: Temporal Flaw Grounding
-    detected_flaws = detect_temporal_flaws(
-        time_series=time_series,
-        pauses=pauses,
-        alignment=alignment_status,
-        features_summary=summary
-    )
+    if is_baseline:
+        detected_flaws = []
+    else:
+        detected_flaws = detect_temporal_flaws(
+            time_series=time_series,
+            pauses=pauses,
+            alignment=alignment_status,
+            features_summary=summary
+        )
 
     # Stage 6: Deterministic Rubric Scoring
     rubric_scores = calculate_rubric_scores(
         features=summary,
         detected_flaws=detected_flaws,
-        metadata=metadata
+        metadata=metadata,
+        is_baseline=is_baseline
     )
 
     return AnalysisResponse(
@@ -88,8 +106,8 @@ def compare_speech_pair(
     if pair_id is None:
         pair_id = f"comp_{uuid.uuid4().hex[:8]}"
 
-    baseline_ana = analyze_speech(baseline_audio, transcript, f"{pair_id}_baseline")
-    flawed_ana = analyze_speech(flawed_audio, transcript, f"{pair_id}_flawed")
+    baseline_ana = analyze_speech(baseline_audio, transcript, f"{pair_id}_baseline", is_baseline=True)
+    flawed_ana = analyze_speech(flawed_audio, transcript, f"{pair_id}_flawed", is_baseline=False)
 
     score_delta = round(flawed_ana.rubric_scores.overall_score - baseline_ana.rubric_scores.overall_score, 1)
 

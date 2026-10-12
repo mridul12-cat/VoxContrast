@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_04_keynote_monotone_energy_3",
+  "text_id": "speech_04_keynote",
+  "split": "train_dev",
+  "category": "monotone_energy",
+  "severity": "moderate",
+  "duration_s": 16.32,
+  "baseline_audio_file": "data/audio/baselines/speech_04_keynote_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_04_keynote_monotone_energy_moderate.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_monotone_energy_3_01",
+      "category": "monotone_energy",
+      "start_s": 11.4,
+      "end_s": 12.55,
+      "transcript_slice": "processing delivering instantaneous",
+      "observed_value": 2.44,
+      "baseline_value": 5.5,
+      "unit": "dB",
+      "severity": "moderate",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_energy",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

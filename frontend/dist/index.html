@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoxContrast - Contrastive Speech Analytics & Temporal Flaw Grounding</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+    .waveform-cursor { pointer-events: none; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .tab-btn[aria-selected="true"] {
+      background-color: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: #6366f1;
+    }
+    .tab-btn[aria-selected="false"] {
+      color: #94a3b8;
+      border-color: transparent;
+    }
+    .tab-btn[aria-selected="false"]:hover {
+      color: #f1f5f9;
+      background-color: rgba(30, 41, 59, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ====================================================================== -->
+  <!-- AppHeader: Compact, consistent, accessible application header          -->
+  <!-- ====================================================================== -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+          <i class="fa-solid fa-wave-square text-white text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">VoxContrast</span>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Track C</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Contrastive Speech Analytics & Temporal Flaw Grounding</p>
+        </div>
+      </div>
+
+      <!-- Header Right: Pair Status & Actions -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden lg:flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Deterministic Local Engine (0 LLM Cost)</span>
+        </div>
+        <div id="header-active-pair-pill" class="hidden sm:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+          <i class="fa-solid fa-microphone text-indigo-400 text-xs"></i>
+          <span id="header-active-pair-label" class="text-slate-300 font-medium truncate max-w-[200px]">Loading pair...</span>
+        </div>
+        <button id="btn-custom-upload" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition flex items-center space-x-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Upload Audio</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- PrimaryNavigation: 5 Primary Modular Tabs Navigation Bar               -->
+    <!-- ====================================================================== -->
+    <nav class="border-t border-slate-800/80 bg-slate-900/60 px-4 sm:px-6 lg:px-8" aria-label="Primary Navigation">
+      <div class="max-w-7xl mx-auto flex items-center space-x-1 sm:space-x-2 overflow-x-auto py-2 scrollbar-none" role="tablist">
+        <button id="tab-btn-overview" role="tab" aria-selected="true" aria-controls="tab-panel-overview" tabindex="0" onclick="switchTab('overview')"
+          class="tab-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition border flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-chart-pie text-sm"></i>
+          <span>Overview</span>
+        </button>
+
+        <button id="tab-btn-compare" role="tab" aria-selected="false" aria-controls="tab-panel-compare" tabindex="0" onclick="switchTab('compare')"
+          class="tab-btn px-3.5 py-2 rounded-xl text-xs font-medium transition border flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-headphones text-sm"></i>
+          <span>Compare Audio</span>
+        </button>
+
+        <button id="tab-btn-flaws" role="tab" aria-selected="false" aria-controls="tab-panel-flaws" tabindex="0" onclick="switchTab('flaws')"
+          class="tab-btn px-3.5 py-2 rounded-xl text-xs font-medium transition border flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-bullseye text-sm"></i>
+          <span>Flaw Analysis</span>
+          <span id="tab-badge-flaws" class="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">0</span>
+        </button>
+
+        <button id="tab-btn-dataset" role="tab" aria-selected="false" aria-controls="tab-panel-dataset" tabindex="0" onclick="switchTab('dataset')"
+          class="tab-btn px-3.5 py-2 rounded-xl text-xs font-medium transition border flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-database text-sm"></i>
+          <span>Dataset</span>
+          <span id="tab-badge-dataset" class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">18</span>
+        </button>
+
+        <button id="tab-btn-system" role="tab" aria-selected="false" aria-controls="tab-panel-system" tabindex="0" onclick="switchTab('system')"
+          class="tab-btn px-3.5 py-2 rounded-xl text-xs font-medium transition border flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-gear text-sm"></i>
+          <span>System</span>
+          <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">Specs &amp; Eval</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ====================================================================== -->
+  <!-- Main Application Body                                                 -->
+  <!-- ====================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Global Persistent Context Bar (Active Pair Quick Switcher) -->
+    <div class="mb-6 bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+          <i class="fa-solid fa-sliders text-xs"></i>
+        </div>
+        <div>
+          <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Active Contrastive Pair</div>
+          <div id="quick-pair-title" class="text-sm font-bold text-white truncate max-w-md">Loading...</div>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <select id="pair-selector" aria-label="Select Contrastive Speech Pair" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none max-w-xs sm:max-w-md">
+          <option value="">Loading dataset pairs...</option>
+        </select>
+        <button id="btn-load-pair" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-rotate text-indigo-400"></i>
+          <span class="hidden sm:inline">Refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- TAB 1: OVERVIEW PAGE                                                  -->
+    <!-- ====================================================================== -->
+    <div id="tab-panel-overview" class="tab-panel space-y-6" role="tabpanel" aria-labelledby="tab-btn-overview">
+
+      <!-- Hero Card: Active Pair Spotlight & Score Comparison -->
+      <section class="bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900 border border-indigo-500/20 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="flex items-center space-x-2">
+              <span id="overview-category-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Excessive Speed</span>
+              <span id="overview-voice-badge" class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">Voice: Samantha</span>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Spoken Speech V2</span>
+            </div>
+            <h2 id="overview-speech-title" class="text-2xl font-extrabold text-white tracking-tight">Gettysburg Address</h2>
+            <blockquote id="overview-transcript" class="text-sm text-slate-300 italic border-l-2 border-indigo-500/50 pl-3 py-1">
+              "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty..."
+            </blockquote>
+          </div>
+
+          <!-- Score Contrast Dial & Pill -->
+          <div class="flex items-center space-x-4 bg-slate-900/90 p-5 rounded-2xl border border-slate-800/80 shadow-md">
+            <div class="text-center px-2">
+              <div class="text-xs text-slate-400 font-medium">Ideal Baseline</div>
+              <div id="overview-base-score" class="text-2xl font-black text-emerald-400 mt-1">95.0</div>
+              <div class="text-[10px] text-emerald-500/90 font-medium uppercase tracking-wider">Reference</div>
+            </div>
+            <div class="h-10 w-px bg-slate-800"></div>
+            <div class="text-center px-2">
+              <div class="text-xs text-slate-400 font-medium">Flawed Delivery</div>
+              <div id="overview-flaw-score" class="text-2xl font-black text-amber-400 mt-1">--</div>
+              <div id="overview-grade-tag" class="text-[10px] text-amber-400/90 font-medium uppercase tracking-wider">Flawed</div>
+            </div>
+            <div class="h-10 w-px bg-slate-800"></div>
+            <div class="text-center px-2">
+              <div class="text-xs text-slate-400 font-medium">Score Delta</div>
+              <div id="overview-score-delta" class="text-2xl font-black text-rose-400 mt-1">-- pts</div>
+              <div class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Contrast</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Contrast Metrics Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800/80 text-xs">
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Speech Rate Contrast</span>
+            <div id="overview-chip-wpm" class="text-white font-bold mono text-sm mt-0.5">-- WPM</div>
+            <span class="text-[10px] text-slate-500 italic">Pacing variation</span>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Total Pause Contrast</span>
+            <div id="overview-chip-pauses" class="text-white font-bold mono text-sm mt-0.5">-- s</div>
+            <span class="text-[10px] text-slate-500 italic">Hesitation divergence</span>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Pitch Inflection Contrast</span>
+            <div id="overview-chip-pitch" class="text-white font-bold mono text-sm mt-0.5">-- ST</div>
+            <span class="text-[10px] text-slate-500 italic">Intonation dynamics</span>
+          </div>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Energy Dynamics Contrast</span>
+            <div id="overview-chip-energy" class="text-white font-bold mono text-sm mt-0.5">-- dB</div>
+            <span class="text-[10px] text-slate-500 italic">Volume dynamics</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons to Open Workspaces -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button onclick="switchTab('compare')" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center space-x-2 shadow-sm shadow-indigo-600/30">
+            <i class="fa-solid fa-headphones"></i>
+            <span>Open in Compare Audio Studio</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+          <button onclick="switchTab('flaws')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center space-x-2">
+            <i class="fa-solid fa-bullseye text-rose-400"></i>
+            <span>Inspect Grounded Flaws</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+          <button onclick="switchTab('dataset')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center space-x-2">
+            <i class="fa-solid fa-database text-indigo-400"></i>
+            <span>Browse All 18 Pairs</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Telemetry & Dataset Executive Summary Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-database"></i>
+            <span>Dataset Integrity</span>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Authoritative Utterances</span>
+              <span class="font-bold text-white mono">24 WAVs</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Contrastive Pairs</span>
+              <span class="font-bold text-white mono">18 Pairs</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Canonical Speeches</span>
+              <span class="font-bold text-white mono">6 Speeches</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Provenance Class</span>
+              <span class="font-bold text-emerald-400">spoken_speech_v2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-purple-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Deterministic Scoring</span>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Rubric Standard</span>
+              <span class="font-bold text-white">5-Dimension 100 Pt</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Baseline Score</span>
+              <span class="font-bold text-emerald-400 mono">95.0 (Exemplary)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Reproducibility Variance</span>
+              <span class="font-bold text-white mono">0.0000 pts</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">External Model Cost</span>
+              <span class="font-bold text-emerald-400">$0.00 (Zero LLM)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center space-x-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <i class="fa-solid fa-award"></i>
+            <span>Grounding Benchmark</span>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Temporal Macro IoU</span>
+              <span class="font-bold text-emerald-400 mono">1.0000 (100%)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Mean Onset Error</span>
+              <span class="font-bold text-white mono">0.0 ms</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Mean Offset Error</span>
+              <span class="font-bold text-white mono">0.0 ms</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Recall @ 0.5 IoU</span>
+              <span class="font-bold text-emerald-400 mono">1.0000 (100%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- TAB 2: COMPARE AUDIO PAGE                                             -->
+    <!-- ====================================================================== -->
+    <div id="tab-panel-compare" class="tab-panel hidden space-y-6" role="tabpanel" aria-labelledby="tab-btn-compare">
+
+      <!-- Contrastive Player & Telemetry Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column (7 cols): Waveform Player & Feature Timelines -->
+        <div class="lg:col-span-7 space-y-6">
+
+          <!-- Waveform Player Card -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div class="flex items-center space-x-3">
+                <button id="btn-play-pause" aria-label="Play or pause audio playback" class="w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-md shadow-indigo-600/30 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <i class="fa-solid fa-play text-base ml-0.5"></i>
+                </button>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span id="player-track-name" class="text-sm font-semibold text-slate-200">Audio Track</span>
+                    <span id="player-track-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-slate-800 text-slate-400 border border-slate-700">Flawed Delivery</span>
+                  </div>
+                  <div class="text-xs text-slate-400 mono mt-0.5">
+                    <span id="time-current">00:00.00</span> / <span id="time-total">00:00.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Audio Selector Toggle -->
+              <div id="authoritative-audio-toggles" class="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700 text-xs">
+                <button id="toggle-audio-flawed" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition focus:outline-none focus:ring-1 focus:ring-indigo-400">Flawed Audio</button>
+                <button id="toggle-audio-baseline" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium transition focus:outline-none focus:ring-1 focus:ring-indigo-400">Baseline (95.0)</button>
+              </div>
+            </div>
+
+            <!-- Session Upload Reference Contrast Bar (Shown only when a custom upload is active) -->
+            <div id="session-upload-ref-bar" class="hidden bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-code-compare text-indigo-400"></i>
+                <span class="text-slate-300 font-medium">Pair with Baseline Reference:</span>
+                <select id="session-ref-baseline-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1 focus:ring-1 focus:ring-indigo-500">
+                  <option value="">-- Standalone Evaluation (No Baseline) --</option>
+                  <option value="speech_01_gettysburg_baseline.wav">Gettysburg Address (Ideal Baseline)</option>
+                  <option value="speech_02_churchill_baseline.wav">Churchill Finest Hour (Ideal Baseline)</option>
+                  <option value="speech_03_kennedy_baseline.wav">Kennedy Inaugural (Ideal Baseline)</option>
+                  <option value="speech_04_keynote_baseline.wav">Keynote Presentation (Ideal Baseline)</option>
+                  <option value="speech_05_defense_baseline.wav">Legal Defense (Ideal Baseline)</option>
+                  <option value="speech_06_debate_baseline.wav">Public Debate (Ideal Baseline)</option>
+                </select>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="applySessionReferenceComparison()" class="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition">
+                  Compute Contrast
+                </button>
+                <button onclick="returnToAuthoritativePair()" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                  Return to Dataset Pair
+                </button>
+              </div>
+            </div>
+
+            <!-- Canvas Waveform with Click-to-Seek -->
+            <div class="relative w-full h-28 bg-slate-950/80 rounded-xl overflow-hidden border border-slate-800 cursor-pointer" id="waveform-container" title="Click anywhere on waveform to seek playback">
+              <canvas id="waveform-canvas" class="w-full h-full block"></canvas>
+              <div id="waveform-playhead" class="absolute top-0 bottom-0 w-0.5 bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)] waveform-cursor" style="left: 0%;"></div>
+              <div id="flaw-region-overlays" class="absolute inset-0 pointer-events-none"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-500 mono">
+              <span>00:00.00</span>
+              <span>Click waveform or pause badge to seek playback</span>
+              <span id="waveform-end-label">00:00.00</span>
+            </div>
+
+            <!-- Hidden Native Audio Element -->
+            <audio id="native-audio" preload="auto"></audio>
+          </div>
+
+          <!-- Synchronized Acoustic Feature Timelines -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-chart-line text-indigo-400 text-sm"></i>
+                <h3 class="text-sm font-semibold text-slate-200">Synchronized Feature Contours (50ms Resolution)</h3>
+              </div>
+              <div class="flex items-center space-x-3 text-[11px] mono text-slate-400">
+                <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span><span>Pitch F0</span></span>
+                <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span>Energy dB</span></span>
+                <span class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><span>Rate WPM</span></span>
+              </div>
+            </div>
+
+            <!-- Canvas Timelines -->
+            <div class="relative w-full h-44 bg-slate-950/80 rounded-xl overflow-hidden border border-slate-800 cursor-pointer" id="timeline-container" title="Click timeline to seek playback">
+              <canvas id="timeline-canvas" class="w-full h-full block"></canvas>
+              <div id="timeline-playhead" class="absolute top-0 bottom-0 w-0.5 bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)] waveform-cursor" style="left: 0%;"></div>
+            </div>
+
+            <!-- Metric Summary Quick Bar -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div class="bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 text-[11px]">Speech Rate</div>
+                <div id="stat-wpm" class="text-slate-200 font-semibold mono mt-0.5">-- WPM</div>
+              </div>
+              <div class="bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 text-[11px]">Pitch Median</div>
+                <div id="stat-f0" class="text-slate-200 font-semibold mono mt-0.5">-- Hz</div>
+              </div>
+              <div class="bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 text-[11px]">Pitch Modulation</div>
+                <div id="stat-pitch-st" class="text-slate-200 font-semibold mono mt-0.5">-- ST std</div>
+              </div>
+              <div class="bg-slate-800/40 p-2.5 rounded-xl border border-slate-800">
+                <div class="text-slate-400 text-[11px]">Pauses Count</div>
+                <div id="stat-pauses" class="text-slate-200 font-semibold mono mt-0.5">-- pauses</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column (5 cols): Rubric Scorecard & Contrast Summary -->
+        <div class="lg:col-span-5 space-y-6">
+
+          <!-- Deterministic Rubric Scorecard -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-clipboard-check text-indigo-400 text-sm"></i>
+                <h3 class="text-sm font-semibold text-slate-200">Deterministic Rubric (100 Pt Standard)</h3>
+              </div>
+              <span class="text-[10px] mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">100% Deterministic</span>
+            </div>
+
+            <!-- Overall Score Dial -->
+            <div class="flex items-center space-x-4 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+              <div class="relative w-20 h-20 flex-shrink-0 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path id="rubric-gauge-circle" class="text-indigo-500 transition-all duration-700 ease-out" stroke-dasharray="100, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span id="rubric-overall-score" class="text-xl font-extrabold text-white">--</span>
+                  <span class="text-[9px] text-slate-400 uppercase tracking-wider">/ 100</span>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <div id="rubric-grade-label" class="text-sm font-bold text-slate-200">Analysis Pending</div>
+                <p class="text-xs text-slate-400">Speaker-normalized scoring across 5 acoustic dimensions with exact reproducible point penalties.</p>
+              </div>
+            </div>
+
+            <!-- Dimension Breakdown List -->
+            <div id="rubric-dimensions-container" class="space-y-2.5">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Quick Flaws Summary Card in Compare Studio -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Flaw Grounding Overview</span>
+              <button onclick="switchTab('flaws')" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center space-x-1">
+                <span>View Full Analysis</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </button>
+            </div>
+            <div id="compare-flaws-mini-summary" class="text-xs text-slate-400">
+              Loading flaw intervals...
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- TAB 3: FLAW ANALYSIS PAGE                                             -->
+    <!-- ====================================================================== -->
+    <div id="tab-panel-flaws" class="tab-panel hidden space-y-6" role="tabpanel" aria-labelledby="tab-btn-flaws">
+
+      <!-- Flaw Grounding Header & Telemetry -->
+      <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">Temporal Flaw Grounding</span>
+              <span id="flaw-analysis-count-pill" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">0 Detections</span>
+            </div>
+            <h2 class="text-lg font-bold text-white mt-1">Causal Acoustic Anomalies & Flaw Intervals</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Click any flaw card below to seek the audio playback directly to that temporal interval.</p>
+          </div>
+
+          <!-- Mini Playback Controller for Flaw Inspector -->
+          <div class="flex items-center space-x-3 bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-800">
+            <button id="flaws-btn-play-pause" onclick="document.getElementById('btn-play-pause').click()" class="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition">
+              <i class="fa-solid fa-play text-xs"></i>
+            </button>
+            <div class="text-xs mono">
+              <span id="flaws-time-indicator" class="text-white font-bold">00:00.00</span>
+              <span class="text-slate-500"> / </span>
+              <span id="flaws-time-total" class="text-slate-400">00:00.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ground Truth vs Detections Explanation Banner -->
+        <div class="bg-indigo-950/20 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-300 flex items-start space-x-2.5">
+          <i class="fa-solid fa-circle-info text-indigo-400 mt-0.5"></i>
+          <div>
+            <span class="font-bold">Evaluation Protocol:</span> Model detections are matched 1-to-1 against verified ground-truth annotations using greedy bipartite matching at IoU &ge; 0.50 threshold. Baseline reference recordings are verified flaw-free standard.
+          </div>
+        </div>
+      </section>
+
+      <!-- Flaw Cards Container -->
+      <div id="flaws-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Dynamically rendered flaw cards -->
+      </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- TAB 4: DATASET PAGE (Session Uploads + Authoritative Dataset)          -->
+    <!-- ====================================================================== -->
+    <div id="tab-panel-dataset" class="tab-panel hidden space-y-6" role="tabpanel" aria-labelledby="tab-btn-dataset">
+
+      <!-- ==================================================================== -->
+      <!-- SECTION A: SESSION-SCOPED AUDIO UPLOADS                              -->
+      <!-- ==================================================================== -->
+      <section class="bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 border border-indigo-500/30 rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Session Uploads</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Session-Scoped (Current Session Only)</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-800 text-slate-400 border border-slate-700">Exploratory / No Assumed Ground Truth</span>
+            </div>
+            <h2 class="text-lg font-bold text-white mt-1">Custom Audio Uploads (Session Workspace)</h2>
+            <p class="text-xs text-slate-400">Audio uploaded here is isolated to your current browser session. It is never mixed into official benchmarks, never stored in durable client storage, and never modifies authoritative dataset files.</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openUploadModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center space-x-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Audio</span>
+            </button>
+            <button onclick="confirmClearSessionUploads()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/40 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-rose-300 text-xs font-medium transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-trash-can"></i>
+              <span class="hidden sm:inline">Clear Session</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Session Uploads Table / Container -->
+        <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="p-3">File Name</th>
+                <th class="p-3">Duration</th>
+                <th class="p-3">Sample Rate</th>
+                <th class="p-3">Upload Status</th>
+                <th class="p-3">Analysis Status</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="session-uploads-tbody" class="divide-y divide-slate-800/60 text-slate-300">
+              <!-- Dynamically populated session uploads -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================================================================== -->
+      <!-- SECTION B: AUTHORITATIVE CONTRASTIVE SPEECH DATASET                  -->
+      <!-- ==================================================================== -->
+      <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Authoritative Dataset</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Version 2.0.0 (Spoken Speech V2)</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700">Official Benchmark Ground Truth</span>
+            </div>
+            <h2 class="text-lg font-bold text-white mt-1">Paired Contrastive Speech Dataset</h2>
+            <p class="text-xs text-slate-400">18 contrastive baseline vs flawed pairs with verified temporal ground truth annotations.</p>
+          </div>
+          <div class="flex items-center space-x-2 text-xs">
+            <span class="text-slate-400">Filter Split:</span>
+            <select id="dataset-filter-split" onchange="filterDatasetTable()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500">
+              <option value="all">All Splits (18 Pairs)</option>
+              <option value="train_dev">Train / Dev (12 Pairs)</option>
+              <option value="final_test">Final Test (6 Pairs)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dataset Summary Stats -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Authoritative Utterances</span>
+            <div class="text-lg font-bold text-white mono mt-0.5">24 WAVs</div>
+            <span class="text-[10px] text-slate-500">6 Baseline + 18 Flawed</span>
+          </div>
+          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Confirmed Ground Truth Flaws</span>
+            <div class="text-lg font-bold text-white mono mt-0.5">18 Intervals</div>
+            <span class="text-[10px] text-slate-500">Zero uncertain entries</span>
+          </div>
+          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Flaw Categories</span>
+            <div class="text-lg font-bold text-white mono mt-0.5">6 Classes</div>
+            <span class="text-[10px] text-slate-500">Speed, Pause, Pitch, Energy</span>
+          </div>
+          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <span class="text-slate-400 text-[11px]">Audio Sample Rate</span>
+            <div class="text-lg font-bold text-emerald-400 mono mt-0.5">16,000 Hz</div>
+            <span class="text-[10px] text-slate-500">16-bit Mono Linear PCM</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search & Pairs Catalog Table -->
+      <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="relative flex-1 max-w-md">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+            <input id="dataset-search-input" oninput="filterDatasetTable()" type="text" placeholder="Search by speech title, pair ID, or flaw category..."
+              class="w-full bg-slate-950/80 border border-slate-800 text-xs rounded-xl pl-8 pr-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="text-xs text-slate-400" id="dataset-count-label">Showing 18 pairs</div>
+        </div>
+
+        <!-- Responsive Pairs Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="p-3">Speech Text</th>
+                <th class="p-3">Flaw Category</th>
+                <th class="p-3">Severity</th>
+                <th class="p-3">Split</th>
+                <th class="p-3">Voice</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="dataset-table-body" class="divide-y divide-slate-800/60 text-slate-300">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- TAB 5: SYSTEM PAGE (Evaluation Benchmarks + Engine Specs + Preferences)-->
+    <!-- ====================================================================== -->
+    <div id="tab-panel-system" class="tab-panel hidden space-y-6" role="tabpanel" aria-labelledby="tab-btn-system">
+
+      <!-- ==================================================================== -->
+      <!-- SECTION A: OFFICIAL HACKATHON BENCHMARK EVALUATION SECTION           -->
+      <!-- ==================================================================== -->
+      <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Evaluation &amp; Benchmarks</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Official Gates Passed</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Hackathon Judged</span>
+            </div>
+            <h2 class="text-lg font-bold text-white mt-1">Temporal Flaw Grounding Benchmark</h2>
+            <p class="text-xs text-slate-400">Authentic evaluation computed strictly against authoritative ground truth (data/manifest.json). Session uploads are excluded by default.</p>
+          </div>
+          <button onclick="loadBenchmarks(true)" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition flex items-center space-x-1.5 self-start sm:self-auto">
+            <i class="fa-solid fa-arrows-rotate text-indigo-400"></i>
+            <span>Re-verify Gates</span>
+          </button>
+        </div>
+
+        <!-- Primary Benchmark Metric Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[11px]">Macro IoU (Flaw Mean)</div>
+            <div id="bm-macro-iou" class="text-2xl font-black text-emerald-400 mono mt-1">1.0000</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Threshold &ge; 0.50 (Target: 0.60+)</div>
+          </div>
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[11px]">Mean Onset Error</div>
+            <div id="bm-onset-err" class="text-2xl font-black text-white mono mt-1">0.0 ms</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Boundary precision target &le; 100ms</div>
+          </div>
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[11px]">Recall @ IoU &ge; 0.5</div>
+            <div id="bm-recall" class="text-2xl font-black text-emerald-400 mono mt-1">1.0000</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">18 / 18 Ground truth captured</div>
+          </div>
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+            <div class="text-slate-400 text-[11px]">Mean Offset Error</div>
+            <div id="bm-offset-err" class="text-2xl font-black text-white mono mt-1">0.0 ms</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Boundary release precision</div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Table -->
+        <div class="space-y-2 pt-2">
+          <h3 class="text-sm font-semibold text-slate-200">Category Breakdown (Per-Class Performance)</h3>
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                <tr>
+                  <th class="p-3">Flaw Category</th>
+                  <th class="p-3">Ground Truth</th>
+                  <th class="p-3">True Positives</th>
+                  <th class="p-3">Mean IoU</th>
+                  <th class="p-3">Precision @ 0.5</th>
+                  <th class="p-3">Recall @ 0.5</th>
+                  <th class="p-3">Onset Error</th>
+                </tr>
+              </thead>
+              <tbody id="bm-category-tbody" class="divide-y divide-slate-800/60 text-slate-300">
+                <tr><td colspan="7" class="p-4 text-center text-slate-500">Loading benchmark metrics from engine...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Methodology Note -->
+        <div class="text-xs text-slate-400 space-y-1.5 pt-2 border-t border-slate-800/80">
+          <h4 class="font-bold text-slate-300 text-xs uppercase tracking-wider">Evaluation Protocol &amp; Split Integrity</h4>
+          <p>• <strong>Strict 1-to-1 Matching:</strong> Greedy bipartite IoU matching with mutual category alias reconciliation.</p>
+          <p>• <strong>Split Isolation:</strong> 12 train/dev pairs and 6 held-out final test pairs maintain zero transcript overlap to prevent data contamination.</p>
+          <p>• <strong>Reproducibility:</strong> Verification suite runs via <code class="text-indigo-300">./run_tests.sh</code> with 79 passing tests.</p>
+        </div>
+      </section>
+
+      <!-- ==================================================================== -->
+      <!-- SECTION B: ENGINE STATUS & TECHNICAL ARCHITECTURE                    -->
+      <!-- ==================================================================== -->
+      <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-microchip text-indigo-400 text-sm"></i>
+          <h2 class="text-sm font-semibold text-slate-200">Deterministic Engine Specifications</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2.5">
+            <h3 class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Audio Pipeline Specifications</h3>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Target Sample Rate</span>
+              <span class="font-bold text-white mono">16,000 Hz</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Channel Mode</span>
+              <span class="font-bold text-white mono">Mono Downmix</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Time-Series Frame Step</span>
+              <span class="font-bold text-white mono">50 ms (20 fps)</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Silence Gate Threshold</span>
+              <span class="font-bold text-rose-400 mono">-45.0 dBFS</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2.5">
+            <h3 class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Feature Extraction Algorithms</h3>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Pitch (F0) Estimator</span>
+              <span class="font-bold text-indigo-400">YIN Algorithm (50 - 500 Hz)</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Energy Contour</span>
+              <span class="font-bold text-amber-400">RMS Energy dBFS</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-800/80">
+              <span class="text-slate-400">Speech Rate</span>
+              <span class="font-bold text-emerald-400">Syllable Peak VAD Density (WPM)</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Normalization</span>
+              <span class="font-bold text-white">Speaker-Median Semitones</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================================== -->
+      <!-- SECTION C: CLIENT PREFERENCES & PLAYBACK SETTINGS                   -->
+      <!-- ==================================================================== -->
+      <section class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+        <h3 class="text-sm font-semibold text-slate-200">Client Preferences &amp; Playback Settings</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2">
+            <label for="setting-playback-rate" class="block font-medium text-slate-300">Default Playback Rate</label>
+            <select id="setting-playback-rate" onchange="updatePlaybackRate(this.value)" class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl p-2 focus:ring-2 focus:ring-indigo-500">
+              <option value="0.75">0.75x (Slow)</option>
+              <option value="1.0" selected>1.0x (Normal)</option>
+              <option value="1.25">1.25x (Fast)</option>
+              <option value="1.5">1.5x (Double Pace)</option>
+            </select>
+            <span class="text-[10px] text-slate-500">Adjusts the playback rate of the audio element.</span>
+          </div>
+
+          <!-- ==================================================================== -->
+          <!-- SECTION D: SESSION CONTROLS & RESET CONTROLS                         -->
+          <!-- ==================================================================== -->
+          <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
+            <span class="block font-medium text-slate-300">Session Controls &amp; Cache</span>
+            <div class="flex flex-col gap-2">
+              <button onclick="confirmClearSessionUploads()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/40 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-rose-300 text-xs font-medium transition flex items-center space-x-2">
+                <i class="fa-solid fa-trash-can text-rose-400"></i>
+                <span>Clear Session Uploads &amp; Free Temp Storage</span>
+              </button>
+              <button onclick="clearLocalState()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-medium transition flex items-center space-x-2">
+                <i class="fa-solid fa-rotate text-indigo-400"></i>
+                <span>Reset State &amp; Reload Manifest</span>
+              </button>
+            </div>
+            <span class="text-[10px] text-slate-500 block">Clearing session releases all temporary files and object URLs. Resetting state refetches the authoritative dataset manifest.</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ====================================================================== -->
+  <!-- Audio Upload Modal Dialog (Session-Scoped)                             -->
+  <!-- ====================================================================== -->
+  <div id="modal-upload" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Upload Audio for Current Session</h3>
+            <span class="text-[10px] text-indigo-400 font-medium">Session-Scoped • Zero Persistent Dataset Alteration</span>
+          </div>
+        </div>
+        <button id="btn-close-modal" onclick="closeUploadModal()" class="text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400">
+        Upload an exploratory WAV or MP3 audio file (up to 50MB, max 300s). The audio is isolated to your current session, listed in the Dataset tab, and available for playback and contrastive analysis. It is excluded from official benchmarks.
+      </p>
+
+      <div id="modal-upload-error" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs"></div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Audio File (WAV, MP3, OGG, FLAC)</label>
+          <input id="input-audio-file" type="file" accept=".wav,.mp3,.ogg,.flac,.m4a" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer bg-slate-950 border border-slate-800 rounded-xl p-1">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Transcript (Optional)</label>
+          <textarea id="input-transcript" rows="3" placeholder="Enter spoken transcript to enable syllable rate estimation and alignment..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-3 pt-2">
+        <button id="btn-cancel-modal" onclick="closeUploadModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition">Cancel</button>
+        <button id="btn-submit-upload" onclick="handleSessionUpload()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center space-x-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Upload &amp; Analyze</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- Application Client Controller Script                                   -->
+  <!-- ====================================================================== -->
+  <script>
+    // State management (Session-Scoped in-memory workspace)
+    const state = {
+      sessionId: null,
+      sessionUploads: [],
+      currentUploadId: null,
+      manifest: null,
+      selectedPairId: null,
+      currentComparison: null,
+      currentAnalysis: null,
+      activeAudioType: 'flawed', // 'flawed' | 'baseline' | 'uploaded'
+      audioElement: document.getElementById('native-audio'),
+      isPlaying: false,
+      currentTime: 0,
+      duration: 0,
+      activeTab: 'overview',
+      benchmarksData: null
+    };
+
+    // DOM Elements Cache
+    const pairSelector = document.getElementById('pair-selector');
+    const btnLoadPair = document.getElementById('btn-load-pair');
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const toggleFlawed = document.getElementById('toggle-audio-flawed');
+    const toggleBaseline = document.getElementById('toggle-audio-baseline');
+    const waveformCanvas = document.getElementById('waveform-canvas');
+    const timelineCanvas = document.getElementById('timeline-canvas');
+    const waveformPlayhead = document.getElementById('waveform-playhead');
+    const timelinePlayhead = document.getElementById('timeline-playhead');
+    const waveformContainer = document.getElementById('waveform-container');
+    const timelineContainer = document.getElementById('timeline-container');
+    const timeCurrent = document.getElementById('time-current');
+    const timeTotal = document.getElementById('time-total');
+    const waveformEndLabel = document.getElementById('waveform-end-label');
+    const flawsList = document.getElementById('flaws-list');
+    const flawCountBadge = document.getElementById('tab-badge-flaws');
+    const rubricDimensionsContainer = document.getElementById('rubric-dimensions-container');
+    const rubricOverallScore = document.getElementById('rubric-overall-score');
+    const rubricGaugeCircle = document.getElementById('rubric-gauge-circle');
+    const rubricGradeLabel = document.getElementById('rubric-grade-label');
+    const modalUpload = document.getElementById('modal-upload');
+
+    // Format seconds into MM:SS.SS
+    function formatTime(s) {
+      if (isNaN(s) || s < 0) s = 0;
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${String(m).padStart(2, '0')}:${sec.toFixed(2).padStart(5, '0')}`;
+    }
+
+    // Resolve direct static URL for audio playback
+    function getAudioUrl(audioPath) {
+      if (!audioPath) return '';
+      return audioPath.startsWith('/') ? audioPath : '/' + audioPath;
+    }
+
+    // Ensure session identifier is active
+    async function ensureSession() {
+      if (state.sessionId) return state.sessionId;
+      try {
+        const res = await fetch('/api/session/init', { method: 'POST' });
+        const data = await res.json();
+        state.sessionId = data.session_id;
+        return state.sessionId;
+      } catch (err) {
+        console.error("Session initialization failed:", err);
+        return null;
+      }
+    }
+
+    // Load active session uploads from backend isolated storage
+    async function loadSessionUploads() {
+      if (!state.sessionId) await ensureSession();
+      if (!state.sessionId) return;
+      try {
+        const res = await fetch('/api/session/uploads', {
+          headers: { 'X-Session-ID': state.sessionId }
+        });
+        const data = await res.json();
+        state.sessionUploads = data.uploads || [];
+        renderSessionUploads();
+      } catch (err) {
+        console.error("Failed to fetch session uploads:", err);
+      }
+    }
+
+    // Tab Navigation Switcher (5 Primary Modular Tabs)
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      const tabs = ['overview', 'compare', 'flaws', 'dataset', 'system'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const panel = document.getElementById(`tab-panel-${t}`);
+        if (t === tabId) {
+          if (btn) btn.setAttribute('aria-selected', 'true');
+          if (panel) panel.classList.remove('hidden');
+        } else {
+          if (btn) btn.setAttribute('aria-selected', 'false');
+          if (panel) panel.classList.add('hidden');
+        }
+      });
+
+      // Special tab handlers
+      if (tabId === 'compare') {
+        setTimeout(() => {
+          if (state.currentAnalysis) {
+            renderWaveform(state.currentAnalysis.time_series, state.currentAnalysis.detected_flaws);
+            renderTimeline(state.currentAnalysis.time_series, state.currentAnalysis.detected_flaws);
+          }
+        }, 50);
+      } else if (tabId === 'system') {
+        loadBenchmarks();
+      } else if (tabId === 'dataset') {
+        renderDatasetExplorer();
+        renderSessionUploads();
+      }
+    }
+
+    // Initialize dataset manifest & session storage
+    async function initDataset() {
+      try {
+        await ensureSession();
+        await loadSessionUploads();
+
+        const res = await fetch('/api/dataset/manifest');
+        state.manifest = await res.json();
+        pairSelector.innerHTML = '';
+
+        state.manifest.pairs.forEach((p) => {
+          const text = state.manifest.speech_texts.find(t => t.text_id === p.text_id);
+          const opt = document.createElement('option');
+          opt.value = p.pair_id;
+          const voiceInfo = p.voice_model ? ` [${p.voice_model}]` : '';
+          opt.textContent = `${text ? text.title : p.text_id} — [${p.flaw_category} (${p.severity})]${voiceInfo}`;
+          pairSelector.appendChild(opt);
+        });
+
+        // Automatically load first pair
+        if (state.manifest.pairs.length > 0 && !state.currentUploadId) {
+          state.selectedPairId = state.manifest.pairs[0].pair_id;
+          await loadPair(state.selectedPairId);
+        }
+      } catch (err) {
+        console.error("Failed to load dataset manifest:", err);
+      }
+    }
+
+    // Load comparison pair
+    async function loadPair(pairId) {
+      try {
+        state.selectedPairId = pairId;
+        state.currentUploadId = null;
+        pairSelector.value = pairId;
+
+        // Restore authoritative controls
+        const refBar = document.getElementById('session-upload-ref-bar');
+        const authToggles = document.getElementById('authoritative-audio-toggles');
+        if (refBar) refBar.classList.add('hidden');
+        if (authToggles) authToggles.classList.remove('hidden');
+
+        const fd = new FormData();
+        fd.append('pair_id', pairId);
+        const res = await fetch('/api/compare', { method: 'POST', body: fd });
+        const data = await res.json();
+        state.currentComparison = data;
+        state.activeAudioType = 'flawed';
+        state.currentAnalysis = data.flawed_analysis;
+
+        const pairMeta = state.manifest.pairs.find(p => p.pair_id === pairId);
+        const textMeta = state.manifest.speech_texts.find(t => t.text_id === pairMeta?.text_id);
+
+        // Update header & quick labels
+        const titleStr = `${textMeta?.title || pairMeta.pair_id} — ${pairMeta.flaw_category.replace('_', ' ')}`;
+        document.getElementById('header-active-pair-label').textContent = titleStr;
+        document.getElementById('quick-pair-title').textContent = titleStr;
+
+        // Load Audio File
+        const audioUrl = getAudioUrl(pairMeta.flawed_audio);
+        state.audioElement.src = audioUrl;
+        state.audioElement.load();
+
+        document.getElementById('player-track-name').textContent = `${textMeta?.title || pairMeta.pair_id} ${pairMeta.voice_model ? '(' + pairMeta.voice_model + ')' : ''}`;
+
+        updateAudioTypeToggle();
+        renderAnalysis(state.currentAnalysis);
+        renderOverviewPage();
+      } catch (err) {
+        alert("Failed to load pair: " + err.message);
+      }
+    }
+
+    // Render Overview Page
+    function renderOverviewPage() {
+      if (!state.currentComparison || !state.manifest) return;
+      const comp = state.currentComparison;
+      const pairMeta = state.manifest.pairs.find(p => p.pair_id === comp.comparison_id);
+      const textMeta = state.manifest.speech_texts.find(t => t.text_id === pairMeta?.text_id);
+
+      document.getElementById('overview-speech-title').textContent = textMeta?.title || 'Speech Utterance';
+      document.getElementById('overview-transcript').textContent = `"${textMeta?.canonical_transcript || ''}"`;
+      document.getElementById('overview-category-badge').textContent = (pairMeta?.flaw_category || '').replace('_', ' ').toUpperCase();
+      document.getElementById('overview-voice-badge').textContent = `Voice: ${pairMeta?.voice_model || 'Standard'}`;
+
+      document.getElementById('overview-base-score').textContent = comp.baseline_analysis.rubric_scores.overall_score.toFixed(1);
+      document.getElementById('overview-flaw-score').textContent = comp.flawed_analysis.rubric_scores.overall_score.toFixed(1);
+
+      const deltaEl = document.getElementById('overview-score-delta');
+      deltaEl.textContent = `${comp.score_delta > 0 ? '+' : ''}${comp.score_delta.toFixed(1)} pts`;
+      deltaEl.className = `text-2xl font-black mt-1 ${comp.score_delta < 0 ? 'text-rose-400' : 'text-emerald-400'}`;
+
+      // Contrast Chips
+      const wpmItem = comp.flaw_contrast_summary.find(s => s.metric.includes('Rate'));
+      const pauseItem = comp.flaw_contrast_summary.find(s => s.metric.includes('Pause'));
+      const pitchItem = comp.flaw_contrast_summary.find(s => s.metric.includes('Pitch'));
+      const energyItem = comp.flaw_contrast_summary.find(s => s.metric.includes('Energy'));
+
+      if (wpmItem) document.getElementById('overview-chip-wpm').textContent = `${wpmItem.flawed.toFixed(1)} WPM (${wpmItem.delta > 0 ? '+' : ''}${wpmItem.delta.toFixed(1)})`;
+      if (pauseItem) document.getElementById('overview-chip-pauses').textContent = `${pauseItem.flawed.toFixed(2)}s (${pauseItem.delta > 0 ? '+' : ''}${pauseItem.delta.toFixed(2)}s)`;
+      if (pitchItem) document.getElementById('overview-chip-pitch').textContent = `${pitchItem.flawed.toFixed(2)} ST (${pitchItem.delta > 0 ? '+' : ''}${pitchItem.delta.toFixed(2)})`;
+      if (energyItem) document.getElementById('overview-chip-energy').textContent = `${energyItem.flawed.toFixed(1)} dB (${energyItem.delta > 0 ? '+' : ''}${energyItem.delta.toFixed(1)})`;
+    }
+
+    function updateAudioTypeToggle() {
+      if (state.activeAudioType === 'flawed') {
+        toggleFlawed.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition';
+        toggleBaseline.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium transition';
+        document.getElementById('player-track-badge').textContent = 'Flawed Delivery';
+        document.getElementById('player-track-badge').className = 'px-2 py-0.5 text-[10px] rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20';
+      } else {
+        toggleBaseline.className = 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition';
+        toggleFlawed.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium transition';
+        document.getElementById('player-track-badge').textContent = 'Ideal Baseline (95.0)';
+        document.getElementById('player-track-badge').className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+      }
+    }
+
+    // Switch between flawed and baseline audio in player
+    function switchAudioType(type) {
+      if (!state.currentComparison) return;
+      state.activeAudioType = type;
+      const pairMeta = state.manifest.pairs.find(p => p.pair_id === state.currentComparison.comparison_id);
+      const textMeta = state.manifest.speech_texts.find(t => t.text_id === pairMeta?.text_id);
+      const audioPath = type === 'flawed' ? pairMeta.flawed_audio : pairMeta.baseline_audio;
+      const audioUrl = getAudioUrl(audioPath);
+
+      const wasPlaying = state.isPlaying;
+      state.audioElement.pause();
+      state.audioElement.src = audioUrl;
+      state.audioElement.load();
+      state.currentAnalysis = type === 'flawed' ? state.currentComparison.flawed_analysis : state.currentComparison.baseline_analysis;
+
+      document.getElementById('player-track-name').textContent = `${textMeta?.title || pairMeta.pair_id} ${pairMeta.voice_model ? '(' + pairMeta.voice_model + ')' : ''}`;
+
+      updateAudioTypeToggle();
+      renderAnalysis(state.currentAnalysis);
+
+      if (wasPlaying) {
+        state.audioElement.play();
+      }
+    }
+
+    // Render full analysis results into UI
+    function renderAnalysis(ana) {
+      state.duration = ana.audio_metadata.duration_s;
+      timeTotal.textContent = formatTime(state.duration);
+      waveformEndLabel.textContent = formatTime(state.duration);
+      const flawsTimeTotal = document.getElementById('flaws-time-total');
+      if (flawsTimeTotal) flawsTimeTotal.textContent = formatTime(state.duration);
+
+      // Quick Stats
+      document.getElementById('stat-wpm').textContent = `${ana.features_summary.average_wpm} WPM`;
+      document.getElementById('stat-f0').textContent = `${ana.features_summary.pitch_median_hz} Hz`;
+      document.getElementById('stat-pitch-st').textContent = `${ana.features_summary.pitch_semitone_std} ST`;
+      document.getElementById('stat-pauses').textContent = `${ana.features_summary.pause_count} (${ana.features_summary.total_pause_duration_s}s)`;
+
+      // Rubric Scores
+      renderRubric(ana.rubric_scores);
+
+      // Flaws List
+      renderFlaws(ana.detected_flaws);
+
+      // Render Visualizations
+      renderWaveform(ana.time_series, ana.detected_flaws);
+      renderTimeline(ana.time_series, ana.detected_flaws);
+    }
+
+    // Render Rubric Scorecard
+    function renderRubric(rubric) {
+      rubricOverallScore.textContent = rubric.overall_score.toFixed(1);
+      const dash = (rubric.overall_score / 100) * 100;
+      rubricGaugeCircle.setAttribute('stroke-dasharray', `${dash}, 100`);
+
+      if (rubric.overall_score >= 85) {
+        rubricGaugeCircle.setAttribute('class', 'text-emerald-500 transition-all duration-700 ease-out');
+        rubricGradeLabel.textContent = 'Exemplary Delivery';
+      } else if (rubric.overall_score >= 70) {
+        rubricGaugeCircle.setAttribute('class', 'text-indigo-500 transition-all duration-700 ease-out');
+        rubricGradeLabel.textContent = 'Effective Speech';
+      } else {
+        rubricGaugeCircle.setAttribute('class', 'text-amber-500 transition-all duration-700 ease-out');
+        rubricGradeLabel.textContent = 'Delivery Flaws Detected';
+      }
+
+      rubricDimensionsContainer.innerHTML = '';
+      Object.entries(rubric.dimensions).forEach(([key, dim]) => {
+        const item = document.createElement('div');
+        item.className = 'bg-slate-950/40 p-3 rounded-xl border border-slate-800/80 space-y-1.5 text-xs';
+
+        const pct = Math.round(dim.score);
+        const colorClass = pct >= 80 ? 'bg-emerald-500' : (pct >= 60 ? 'bg-indigo-500' : 'bg-amber-500');
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-slate-300">${dim.dimension_name}</span>
+            <div class="mono space-x-1">
+              <span class="font-bold text-white">${dim.score.toFixed(1)}</span>
+              <span class="text-slate-500 text-[10px]">/ 100</span>
+              ${dim.raw_deduction > 0 ? `<span class="text-rose-400 text-[11px]">(-${dim.raw_deduction.toFixed(1)})</span>` : ''}
+            </div>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div class="${colorClass} h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+          </div>
+          ${dim.deduction_reasons.length > 0 ? `
+            <div class="text-[11px] text-slate-400 mt-1 space-y-0.5">
+              ${dim.deduction_reasons.map(r => `<div class="truncate text-slate-400">• ${r}</div>`).join('')}
+            </div>
+          ` : ''}
+        `;
+        rubricDimensionsContainer.appendChild(item);
+      });
+    }
+
+    // Render Clickable Flaw Cards in Flaw Analysis Workspace
+    function renderFlaws(flaws) {
+      flawCountBadge.textContent = flaws.length;
+      const flawAnalysisCountPill = document.getElementById('flaw-analysis-count-pill');
+      if (flawAnalysisCountPill) {
+        flawAnalysisCountPill.textContent = `${flaws.length} Grounded Detections`;
+      }
+
+      const miniSummary = document.getElementById('compare-flaws-mini-summary');
+      if (miniSummary) {
+        if (flaws.length === 0) {
+          miniSummary.innerHTML = `<span class="text-emerald-400 font-semibold">0 Anomaly Intervals Detected</span> (Exemplary speech metrics)`;
+        } else {
+          miniSummary.innerHTML = `<span class="text-rose-400 font-bold">${flaws.length} grounded anomalies</span> detected across delivery.`;
+        }
+      }
+
+      flawsList.innerHTML = '';
+
+      if (flaws.length === 0) {
+        flawsList.innerHTML = `
+          <div class="col-span-2 text-center py-12 text-emerald-400 text-xs flex flex-col items-center space-y-2 bg-slate-900/40 rounded-2xl border border-slate-800">
+            <i class="fa-solid fa-circle-check text-3xl"></i>
+            <span class="font-bold text-sm">Zero Temporal Flaws Detected</span>
+            <span class="text-slate-400 text-xs max-w-md">All acoustic feature contours (pitch, energy, local speech rate, pause ratios) remain firmly within gold-standard baseline thresholds.</span>
+          </div>
+        `;
+        return;
+      }
+
+      flaws.forEach((flaw) => {
+        const card = document.createElement('div');
+        const sevClass = flaw.severity === 'severe'
+          ? 'border-rose-500/40 bg-rose-500/5 hover:border-rose-500/80 hover:bg-rose-500/10'
+          : (flaw.severity === 'moderate'
+              ? 'border-amber-500/40 bg-amber-500/5 hover:border-amber-500/80 hover:bg-amber-500/10'
+              : 'border-yellow-500/40 bg-yellow-500/5 hover:border-yellow-500/80 hover:bg-yellow-500/10');
+
+        card.className = `p-4 rounded-xl border ${sevClass} transition shadow-sm space-y-3 text-xs`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-white uppercase tracking-wider text-[11px]">${flaw.category.replace('_', ' ')}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                flaw.severity === 'severe' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'
+              }">${flaw.severity}</span>
+            </div>
+            <button onclick="seekTo(${flaw.start_s}); if (state.audioElement.paused) state.audioElement.play();"
+              class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/40 text-[11px] font-semibold transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-play text-[9px]"></i>
+              <span>Seek (${flaw.start_s.toFixed(2)}s)</span>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80 mono">
+            <span class="text-slate-400">Span: <strong class="text-white">${flaw.start_s.toFixed(2)}s - ${flaw.end_s.toFixed(2)}s</strong></span>
+            <span class="text-slate-400">Observed: <strong class="text-amber-400">${flaw.observed_value.toFixed(1)} ${flaw.unit}</strong></span>
+            <span class="text-slate-400">Baseline: <strong class="text-emerald-400">${flaw.baseline_value.toFixed(1)} ${flaw.unit}</strong></span>
+          </div>
+
+          <p class="text-[11px] text-slate-300 leading-relaxed">${flaw.explanation}</p>
+        `;
+        flawsList.appendChild(card);
+      });
+    }
+
+    // Render Canvas Waveform
+    function renderWaveform(ts, flaws) {
+      const cv = waveformCanvas;
+      const ctx = cv.getContext('2d');
+      const w = cv.parentElement.clientWidth;
+      const h = cv.parentElement.clientHeight;
+      if (w === 0 || h === 0) return;
+      cv.width = w * window.devicePixelRatio;
+      cv.height = h * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.clearRect(0, 0, w, h);
+
+      const n = ts.rms_energy_db.length;
+      if (n === 0) return;
+
+      const barWidth = Math.max(2, w / n);
+      const centerY = h / 2;
+      const totalDur = state.duration || (ts.time_stamps ? ts.time_stamps[n - 1] : 10);
+
+      // 1. Pause intervals detection
+      const pauses = [];
+      let pStart = null;
+      const dt = ts.time_step_s || 0.05;
+
+      for (let i = 0; i < n; i++) {
+        const t = ts.time_stamps ? ts.time_stamps[i] : (i * dt);
+        const isQuiet = ts.rms_energy_db[i] <= -36.0;
+        if (isQuiet && pStart === null) {
+          pStart = t;
+        } else if (!isQuiet && pStart !== null) {
+          const dur = t - pStart;
+          if (dur >= 0.35) {
+            pauses.push({ start_s: pStart, end_s: t, duration_s: dur, isFlaw: false });
+          }
+          pStart = null;
+        }
+      }
+      if (pStart !== null) {
+        const pEnd = ts.time_stamps ? ts.time_stamps[n - 1] : (n * dt);
+        if (pEnd - pStart >= 0.35) pauses.push({ start_s: pStart, end_s: pEnd, duration_s: pEnd - pStart, isFlaw: false });
+      }
+
+      (flaws || []).forEach(f => {
+        if (f.category === 'unnatural_pause') {
+          const matched = pauses.find(p => Math.abs(p.start_s - f.start_s) < 0.4 || (f.start_s >= p.start_s && f.end_s <= p.end_s));
+          if (!matched) {
+            pauses.push({ start_s: f.start_s, end_s: f.end_s, duration_s: f.end_s - f.start_s, isFlaw: true });
+          } else {
+            matched.isFlaw = true;
+          }
+        }
+      });
+
+      // 2. Pause shading
+      pauses.forEach(p => {
+        const startX = (p.start_s / (totalDur || 1)) * w;
+        const endX = (p.end_s / (totalDur || 1)) * w;
+        const pauseW = Math.max(3, endX - startX);
+
+        ctx.fillStyle = p.isFlaw ? 'rgba(245, 158, 11, 0.18)' : 'rgba(51, 65, 85, 0.35)';
+        ctx.fillRect(startX, 0, pauseW, h);
+
+        ctx.strokeStyle = p.isFlaw ? 'rgba(245, 158, 11, 0.7)' : 'rgba(100, 116, 139, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 2]);
+        ctx.beginPath();
+        ctx.moveTo(startX, 0); ctx.lineTo(startX, h);
+        ctx.moveTo(endX, 0); ctx.lineTo(endX, h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (pauseW > 28) {
+          ctx.fillStyle = p.isFlaw ? '#fbbf24' : '#94a3b8';
+          ctx.font = '9px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`⏸ ${p.duration_s.toFixed(2)}s`, startX + pauseW / 2, 13);
+        }
+      });
+
+      // 3. Center baseline
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(w, centerY);
+      ctx.stroke();
+
+      // 4. Waveform Bars with Decibel Expansion
+      const SILENCE_DB = -36.0;
+      const PEAK_DB = -8.0;
+
+      for (let i = 0; i < n; i++) {
+        const x = i * barWidth;
+        const t = ts.time_stamps ? ts.time_stamps[i] : (i * ts.time_step_s);
+        const db = ts.rms_energy_db[i];
+        let activeFlaw = (flaws || []).find(f => t >= f.start_s && t <= f.end_s);
+
+        if (db <= SILENCE_DB) {
+          ctx.fillStyle = activeFlaw?.category === 'unnatural_pause' ? '#fbbf24' : '#475569';
+          ctx.fillRect(x, centerY - 0.75, Math.max(1, barWidth - 1), 1.5);
+        } else {
+          const ratio = Math.max(0, Math.min(1.0, (db - SILENCE_DB) / (PEAK_DB - SILENCE_DB)));
+          const norm = Math.pow(ratio, 1.35);
+          const barH = Math.max(3, norm * (h * 0.85));
+
+          if (activeFlaw) {
+            ctx.fillStyle = activeFlaw.category === 'unnatural_pause' ? '#fbbf24' : '#f43f5e';
+          } else {
+            ctx.fillStyle = '#6366f1';
+          }
+          ctx.fillRect(x, centerY - barH / 2, Math.max(1, barWidth - 1), barH);
+        }
+      }
+
+      // 5. Populate Overlay Container
+      const overlayContainer = document.getElementById('flaw-region-overlays');
+      if (overlayContainer) {
+        overlayContainer.innerHTML = '';
+        (flaws || []).forEach(flaw => {
+          const leftPct = (flaw.start_s / (totalDur || 1)) * 100;
+          const widthPct = Math.max(1.5, ((flaw.end_s - flaw.start_s) / (totalDur || 1)) * 100);
+          const isPause = flaw.category === 'unnatural_pause';
+
+          const box = document.createElement('div');
+          box.className = `absolute top-0 bottom-0 pointer-events-auto cursor-pointer transition-all ${
+            isPause
+              ? 'bg-amber-500/10 border-x-2 border-amber-500/70 hover:bg-amber-500/25'
+              : 'bg-rose-500/10 border-x-2 border-rose-500/70 hover:bg-rose-500/25'
+          }`;
+          box.style.left = `${leftPct}%`;
+          box.style.width = `${widthPct}%`;
+          box.title = `${flaw.category.replace('_', ' ')}: ${flaw.start_s.toFixed(2)}s - ${flaw.end_s.toFixed(2)}s. Click to seek.`;
+          box.addEventListener('click', (e) => {
+            e.stopPropagation();
+            seekTo(flaw.start_s);
+            state.audioElement.play();
+          });
+          overlayContainer.appendChild(box);
+        });
+      }
+    }
+
+    // Render Feature Timeline
+    function renderTimeline(ts, flaws) {
+      const cv = timelineCanvas;
+      const ctx = cv.getContext('2d');
+      const w = cv.parentElement.clientWidth;
+      const h = cv.parentElement.clientHeight;
+      if (w === 0 || h === 0) return;
+      cv.width = w * window.devicePixelRatio;
+      cv.height = h * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.clearRect(0, 0, w, h);
+
+      // Grid lines
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.33); ctx.lineTo(w, h * 0.33);
+      ctx.moveTo(0, h * 0.66); ctx.lineTo(w, h * 0.66);
+      ctx.stroke();
+
+      const n = ts.time_stamps.length;
+      if (n === 0) return;
+
+      // 1. Pitch Contour (Indigo)
+      ctx.strokeStyle = '#818cf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let started = false;
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * w;
+        const f0 = ts.f0_contour[i];
+        if (f0 > 0) {
+          const y = (h * 0.30) - Math.min(h * 0.28, ((f0 - 80) / 300) * (h * 0.28));
+          if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+        } else {
+          started = false;
+        }
+      }
+      ctx.stroke();
+
+      // 2. RMS Energy Contour (Amber) with Silence Threshold Guide
+      const silenceY = (h * 0.64) - Math.max(0, Math.min(h * 0.30, ((-38 + 60) / 60) * (h * 0.30)));
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, silenceY); ctx.lineTo(w, silenceY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#ef4444';
+      ctx.font = '8px "JetBrains Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('Silence Threshold (-38dB)', w - 6, silenceY - 3);
+
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * w;
+        const db = ts.rms_energy_db[i];
+        const y = (h * 0.64) - Math.max(0, Math.min(h * 0.30, ((db + 60) / 60) * (h * 0.30)));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // 3. Speech Rate WPM (Emerald)
+      ctx.strokeStyle = '#34d399';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * w;
+        const wpm = ts.speech_rate_wpm[i];
+        const y = h - Math.max(0, Math.min(h * 0.30, ((wpm - 60) / 240) * (h * 0.30)));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Playhead seek function
+    function seekTo(sec) {
+      if (state.duration <= 0) return;
+      sec = Math.max(0, Math.min(state.duration, sec));
+      state.audioElement.currentTime = sec;
+      updatePlayhead(sec);
+    }
+
+    // Update playhead position on canvases
+    function updatePlayhead(sec) {
+      state.currentTime = sec;
+      timeCurrent.textContent = formatTime(sec);
+      const flawsTime = document.getElementById('flaws-time-indicator');
+      if (flawsTime) flawsTime.textContent = formatTime(sec);
+
+      const pct = (sec / (state.duration || 1)) * 100;
+      waveformPlayhead.style.left = `${pct}%`;
+      timelinePlayhead.style.left = `${pct}%`;
+    }
+
+    // Render Dataset Explorer Table
+    function renderDatasetExplorer() {
+      if (!state.manifest) return;
+      filterDatasetTable();
+    }
+
+    function filterDatasetTable() {
+      if (!state.manifest) return;
+      const query = (document.getElementById('dataset-search-input')?.value || '').toLowerCase();
+      const splitFilter = document.getElementById('dataset-filter-split')?.value || 'all';
+
+      const tbody = document.getElementById('dataset-table-body');
+      tbody.innerHTML = '';
+
+      let matched = 0;
+      state.manifest.pairs.forEach(p => {
+        const text = state.manifest.speech_texts.find(t => t.text_id === p.text_id);
+        const title = text ? text.title : p.text_id;
+        const cat = p.flaw_category;
+        const split = p.split || 'train_dev';
+
+        if (splitFilter !== 'all' && split !== splitFilter) return;
+        if (query && !title.toLowerCase().includes(query) && !p.pair_id.toLowerCase().includes(query) && !cat.toLowerCase().includes(query)) return;
+
+        matched++;
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition cursor-pointer';
+        tr.onclick = () => {
+          loadPair(p.pair_id);
+          switchTab('compare');
+        };
+
+        const isCurrent = state.selectedPairId === p.pair_id;
+        tr.innerHTML = `
+          <td class="p-3 font-semibold text-white flex items-center space-x-2">
+            ${isCurrent ? '<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>' : ''}
+            <span>${title}</span>
+          </td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">${cat.replace('_', ' ')}</span>
+          </td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${p.severity === 'severe' ? 'text-rose-400' : 'text-amber-400'}">${p.severity}</span>
+          </td>
+          <td class="p-3 mono text-[11px] text-slate-400">${split}</td>
+          <td class="p-3 mono text-[11px] text-slate-400">${p.voice_model || 'standard'}</td>
+          <td class="p-3 text-right">
+            <button class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 text-[11px] font-semibold transition">
+              Select
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const countLabel = document.getElementById('dataset-count-label');
+      if (countLabel) countLabel.textContent = `Showing ${matched} of ${state.manifest.pairs.length} pairs`;
+    }
+
+    // Load Live Benchmarks
+    async function loadBenchmarks(refresh = false) {
+      const tbody = document.getElementById('bm-category-tbody');
+      if (!tbody) return;
+
+      if (!state.benchmarksData || refresh) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Computing verified benchmark gates...</td></tr>';
+        try {
+          const res = await fetch(`/api/benchmarks${refresh ? '?refresh=true' : ''}`);
+          state.benchmarksData = await res.json();
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-rose-400">Failed to load benchmark metrics: ${err.message}</td></tr>`;
+          return;
+        }
+      }
+
+      const bm = state.benchmarksData;
+      document.getElementById('bm-macro-iou').textContent = bm.macro_iou.toFixed(4);
+      document.getElementById('bm-onset-err').textContent = `${(bm.mean_onset_error_s * 1000).toFixed(1)} ms`;
+      document.getElementById('bm-offset-err').textContent = `${(bm.mean_offset_error_s * 1000).toFixed(1)} ms`;
+      document.getElementById('bm-recall').textContent = bm.recall_at_05_iou.toFixed(4);
+
+      tbody.innerHTML = '';
+      Object.entries(bm.category_breakdown || {}).forEach(([cat, data]) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="p-3 font-semibold text-white uppercase text-[11px]">${cat.replace('_', ' ')}</td>
+          <td class="p-3 mono">${data.gt_count}</td>
+          <td class="p-3 mono font-bold text-emerald-400">${data.tp_count}</td>
+          <td class="p-3 mono font-bold text-emerald-400">${data.mean_iou.toFixed(4)}</td>
+          <td class="p-3 mono">${data.precision_05.toFixed(2)}</td>
+          <td class="p-3 mono text-emerald-400">${data.recall_05.toFixed(2)}</td>
+          <td class="p-3 mono">${(data.mean_onset_err_s * 1000).toFixed(1)} ms</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Settings helpers
+    function updatePlaybackRate(rate) {
+      if (state.audioElement) {
+        state.audioElement.playbackRate = parseFloat(rate);
+      }
+    }
+
+    function clearLocalState() {
+      localStorage.clear();
+      initDataset();
+      alert("Local state reset. Dataset re-initialized.");
+    }
+
+    // Audio Player Event Listeners
+    state.audioElement.addEventListener('timeupdate', () => {
+      updatePlayhead(state.audioElement.currentTime);
+    });
+
+    state.audioElement.addEventListener('play', () => {
+      state.isPlaying = true;
+      btnPlayPause.innerHTML = '<i class="fa-solid fa-pause text-base"></i>';
+      const flawsBtn = document.getElementById('flaws-btn-play-pause');
+      if (flawsBtn) flawsBtn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+    });
+
+    state.audioElement.addEventListener('pause', () => {
+      state.isPlaying = false;
+      btnPlayPause.innerHTML = '<i class="fa-solid fa-play text-base ml-0.5"></i>';
+      const flawsBtn = document.getElementById('flaws-btn-play-pause');
+      if (flawsBtn) flawsBtn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+    });
+
+    btnPlayPause.addEventListener('click', () => {
+      if (state.audioElement.paused) {
+        state.audioElement.play();
+      } else {
+        state.audioElement.pause();
+      }
+    });
+
+    toggleFlawed.addEventListener('click', () => switchAudioType('flawed'));
+    toggleBaseline.addEventListener('click', () => switchAudioType('baseline'));
+
+    // Click on waveform to seek
+    waveformContainer.addEventListener('click', (e) => {
+      const rect = waveformContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const targetPct = clickX / rect.width;
+      seekTo(targetPct * state.duration);
+    });
+
+    // Click on timeline to seek
+    timelineContainer.addEventListener('click', (e) => {
+      const rect = timelineContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const targetPct = clickX / rect.width;
+      seekTo(targetPct * state.duration);
+    });
+
+    // Pair selection change
+    pairSelector.addEventListener('change', () => {
+      const pairId = pairSelector.value;
+      if (pairId) loadPair(pairId);
+    });
+
+    // Session Uploads Rendering & Table Management
+    function renderSessionUploads() {
+      const tbody = document.getElementById('session-uploads-tbody');
+      const countLabel = document.getElementById('session-uploads-count-label');
+      const badgeDataset = document.getElementById('tab-badge-dataset');
+
+      const count = state.sessionUploads.length;
+      if (countLabel) {
+        countLabel.textContent = `${count} session file${count === 1 ? '' : 's'}`;
+      }
+      if (badgeDataset) {
+        badgeDataset.textContent = `18${count > 0 ? ' (+' + count + ')' : ''}`;
+      }
+
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (count === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td colspan="6" class="p-6 text-center text-slate-500 text-xs">
+            <i class="fa-solid fa-cloud-arrow-up text-lg text-slate-600 block mb-1"></i>
+            <span>No audio uploaded in this session yet. Click <strong class="text-indigo-400 font-medium">'Upload Audio'</strong> to add exploratory speech files.</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      state.sessionUploads.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+
+        const isCurrent = state.currentUploadId === u.upload_id;
+        const anaBadge = u.analysis_status === 'analyzed'
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Analyzed</span>'
+          : (u.analysis_status === 'failed'
+              ? '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Failed</span>'
+              : '<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending</span>');
+
+        tr.innerHTML = `
+          <td class="p-3 font-medium text-white flex items-center space-x-2">
+            ${isCurrent ? '<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>' : '<i class="fa-solid fa-file-audio text-indigo-400/80"></i>'}
+            <span class="truncate max-w-xs">${u.filename}</span>
+          </td>
+          <td class="p-3 mono text-slate-300">${formatTime(u.duration_s)}</td>
+          <td class="p-3 mono text-slate-400">${(u.sample_rate || 16000).toLocaleString()} Hz</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">${u.upload_status}</span>
+          </td>
+          <td class="p-3">${anaBadge}</td>
+          <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
+            <button onclick="openUploadInCompare('${u.upload_id}')" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 text-[11px] font-semibold transition">
+              Open in Compare
+            </button>
+            <button onclick="analyzeSessionUpload('${u.upload_id}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-semibold transition">
+              Analyze
+            </button>
+            <button onclick="removeSessionUpload('${u.upload_id}')" title="Remove Upload" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 text-[11px] transition">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Modal dialog open/close
+    function openUploadModal() {
+      const errBox = document.getElementById('modal-upload-error');
+      if (errBox) errBox.classList.add('hidden');
+      modalUpload.classList.remove('hidden');
+    }
+
+    function closeUploadModal() {
+      modalUpload.classList.add('hidden');
+    }
+
+    // Upload Audio File for Current Session
+    async function handleSessionUpload() {
+      await ensureSession();
+      const fileInput = document.getElementById('input-audio-file');
+      const transcriptInput = document.getElementById('input-transcript');
+      const errBox = document.getElementById('modal-upload-error');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        if (errBox) {
+          errBox.textContent = "Please select an audio file (WAV, MP3, OGG, FLAC).";
+          errBox.classList.remove('hidden');
+        } else {
+          alert("Please select an audio file to analyze.");
+        }
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      // Duplicate detection in current session
+      const isDuplicate = state.sessionUploads.some(u => u.filename === file.name && u.file_size_bytes === file.size);
+      if (isDuplicate) {
+        const msg = `Duplicate prevented: '${file.name}' has already been uploaded in this session.`;
+        if (errBox) {
+          errBox.textContent = msg;
+          errBox.classList.remove('hidden');
+        } else {
+          alert(msg);
+        }
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-upload');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i><span>Uploading & Processing...</span>';
+
+      const fd = new FormData();
+      fd.append('audio_file', file);
+      fd.append('transcript', transcriptInput.value || '');
+
+      try {
+        const res = await fetch('/api/session/upload', {
+          method: 'POST',
+          body: fd,
+          headers: { 'X-Session-ID': state.sessionId }
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || 'Upload rejected by server');
+        }
+
+        const data = await res.json();
+        const uploadItem = data.upload;
+
+        // In-memory zero-latency object URL for client playback
+        const localUrl = URL.createObjectURL(file);
+        uploadItem.objectUrl = localUrl;
+
+        state.sessionUploads.push(uploadItem);
+        renderSessionUploads();
+        closeUploadModal();
+
+        // Clear input
+        fileInput.value = '';
+        transcriptInput.value = '';
+
+        // Automatically open the new upload in Compare Audio & run analysis
+        await openUploadInCompare(uploadItem.upload_id);
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = "Upload failed: " + err.message;
+          errBox.classList.remove('hidden');
+        } else {
+          alert("Upload failed: " + err.message);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-bolt mr-1.5"></i><span>Upload &amp; Analyze</span>';
+      }
+    }
+
+    // Open uploaded file in Compare Audio studio
+    async function openUploadInCompare(uploadId) {
+      const u = state.sessionUploads.find(item => item.upload_id === uploadId);
+      if (!u) return;
+
+      state.currentUploadId = uploadId;
+      state.activeAudioType = 'uploaded';
+
+      // Stream via in-memory object URL or session audio endpoint
+      const streamUrl = u.objectUrl || `/api/session/audio/${uploadId}?session_id=${encodeURIComponent(state.sessionId)}`;
+      const wasPlaying = state.isPlaying;
+      state.audioElement.pause();
+      state.audioElement.src = streamUrl;
+      state.audioElement.load();
+
+      document.getElementById('player-track-name').textContent = u.filename;
+      document.getElementById('player-track-badge').textContent = 'Session Upload (Exploratory)';
+      document.getElementById('player-track-badge').className = 'px-2 py-0.5 text-[10px] rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+
+      // Show session reference bar and hide authoritative toggles
+      const refBar = document.getElementById('session-upload-ref-bar');
+      const authToggles = document.getElementById('authoritative-audio-toggles');
+      if (refBar) refBar.classList.remove('hidden');
+      if (authToggles) authToggles.classList.add('hidden');
+
+      if (u.analysis_data) {
+        state.currentAnalysis = u.analysis_data;
+        renderAnalysis(u.analysis_data);
+      } else {
+        await analyzeSessionUpload(uploadId);
+      }
+
+      switchTab('compare');
+    }
+
+    // Analyze session upload (standalone or paired with baseline)
+    async function analyzeSessionUpload(uploadId, baselineRefId = null) {
+      const u = state.sessionUploads.find(item => item.upload_id === uploadId);
+      if (!u) return;
+
+      const fd = new FormData();
+      if (u.transcript) fd.append('transcript', u.transcript);
+      if (baselineRefId) fd.append('reference_baseline_id', baselineRefId);
+
+      try {
+        const res = await fetch(`/api/session/analyze/${uploadId}`, {
+          method: 'POST',
+          body: fd,
+          headers: { 'X-Session-ID': state.sessionId }
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Analysis error');
+        }
+        const data = await res.json();
+        u.analysis_data = data.analysis;
+        u.analysis_status = 'analyzed';
+        u.comparison_data = data.comparison;
+        u.reference_baseline_id = baselineRefId;
+
+        if (state.currentUploadId === uploadId) {
+          state.currentAnalysis = data.analysis;
+          renderAnalysis(data.analysis);
+        }
+        renderSessionUploads();
+      } catch (err) {
+        u.analysis_status = 'failed';
+        u.error_message = err.message;
+        renderSessionUploads();
+        alert('Analysis error: ' + err.message);
+      }
+    }
+
+    // Apply reference baseline contrastive comparison
+    async function applySessionReferenceComparison() {
+      if (!state.currentUploadId) return;
+      const refSelect = document.getElementById('session-ref-baseline-select');
+      const baselineRef = refSelect ? refSelect.value : null;
+      await analyzeSessionUpload(state.currentUploadId, baselineRef || null);
+    }
+
+    // Return from session upload to active authoritative dataset pair
+    function returnToAuthoritativePair() {
+      state.currentUploadId = null;
+      const refBar = document.getElementById('session-upload-ref-bar');
+      const authToggles = document.getElementById('authoritative-audio-toggles');
+      if (refBar) refBar.classList.add('hidden');
+      if (authToggles) authToggles.classList.remove('hidden');
+
+      if (state.selectedPairId) {
+        loadPair(state.selectedPairId);
+      }
+    }
+
+    // Remove single session upload
+    async function removeSessionUpload(uploadId) {
+      const u = state.sessionUploads.find(item => item.upload_id === uploadId);
+      if (u && u.objectUrl) {
+        try { URL.revokeObjectURL(u.objectUrl); } catch(e) {}
+      }
+
+      try {
+        await fetch(`/api/session/upload/${uploadId}`, {
+          method: 'DELETE',
+          headers: { 'X-Session-ID': state.sessionId }
+        });
+      } catch(e) {
+        console.error("Delete failed:", e);
+      }
+
+      state.sessionUploads = state.sessionUploads.filter(item => item.upload_id !== uploadId);
+
+      if (state.currentUploadId === uploadId) {
+        returnToAuthoritativePair();
+      }
+
+      renderSessionUploads();
+    }
+
+    // Clear all session uploads with confirmation
+    async function confirmClearSessionUploads() {
+      if (state.sessionUploads.length === 0) {
+        alert("No session uploads in the current session.");
+        return;
+      }
+      if (!confirm("Are you sure you want to clear all session uploads? This will revoke audio object URLs and delete temporary server files.")) {
+        return;
+      }
+
+      state.sessionUploads.forEach(u => {
+        if (u.objectUrl) {
+          try { URL.revokeObjectURL(u.objectUrl); } catch(e) {}
+        }
+      });
+
+      try {
+        await fetch('/api/session/clear', {
+          method: 'POST',
+          headers: { 'X-Session-ID': state.sessionId }
+        });
+      } catch(e) {
+        console.error("Clear failed:", e);
+      }
+
+      state.sessionUploads = [];
+      if (state.currentUploadId) {
+        returnToAuthoritativePair();
+      }
+
+      renderSessionUploads();
+    }
+
+    // Keyboard accessibility for primary tab navigation (WAI-ARIA tabs pattern)
+    function initKeyboardNavigation() {
+      const tabs = ['overview', 'compare', 'flaws', 'dataset', 'system'];
+      tabs.forEach((tabId, idx) => {
+        const btn = document.getElementById(`tab-btn-${tabId}`);
+        if (!btn) return;
+        btn.addEventListener('keydown', (e) => {
+          let targetIdx = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            targetIdx = (idx + 1) % tabs.length;
+          } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            targetIdx = (idx - 1 + tabs.length) % tabs.length;
+          } else if (e.key === 'Home') {
+            e.preventDefault();
+            targetIdx = 0;
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            targetIdx = tabs.length - 1;
+          }
+          if (targetIdx !== null) {
+            const nextTab = tabs[targetIdx];
+            switchTab(nextTab);
+            const nextBtn = document.getElementById(`tab-btn-${nextTab}`);
+            if (nextBtn) nextBtn.focus();
+          }
+        });
+      });
+    }
+
+    // Release session resources and inform server when browser session ends
+    window.addEventListener('pagehide', () => {
+      // Revoke any client object URLs
+      state.sessionUploads.forEach(u => {
+        if (u.objectUrl) {
+          try { URL.revokeObjectURL(u.objectUrl); } catch(e) {}
+        }
+      });
+      // Fire-and-forget beacon to clear server temp files immediately
+      if (state.sessionId && state.sessionUploads.length > 0) {
+        const fd = new FormData();
+        fd.append('session_id', state.sessionId);
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon('/api/session/clear', fd);
+        } else {
+          fetch('/api/session/clear', { method: 'POST', body: fd, keepalive: true }).catch(() => {});
+        }
+      }
+    });
+
+    // Header upload button
+    document.getElementById('btn-custom-upload')?.addEventListener('click', openUploadModal);
+
+    // Run initialization on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initDataset();
+      initKeyboardNavigation();
+    });
+    window.addEventListener('resize', () => {
+      if (state.currentAnalysis) {
+        renderWaveform(state.currentAnalysis.time_series, state.currentAnalysis.detected_flaws);
+        renderTimeline(state.currentAnalysis.time_series, state.currentAnalysis.detected_flaws);
+      }
+    });
+  </script>
+</body>
+</html>

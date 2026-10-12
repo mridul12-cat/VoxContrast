@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_04_keynote_monotone_pitch_1",
+  "text_id": "speech_04_keynote",
+  "split": "train_dev",
+  "category": "monotone_pitch",
+  "severity": "severe",
+  "duration_s": 15.36,
+  "baseline_audio_file": "data/audio/baselines/speech_04_keynote_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_04_keynote_monotone_pitch_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_1_01",
+      "category": "monotone_pitch",
+      "start_s": 12.9,
+      "end_s": 14.4,
+      "transcript_slice": "directly to everyone everywhere",
+      "observed_value": 2.28,
+      "baseline_value": 3.5,
+      "unit": "ST",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_pitch",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

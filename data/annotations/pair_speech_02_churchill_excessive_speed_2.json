@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_02_churchill_excessive_speed_2",
+  "text_id": "speech_02_churchill",
+  "split": "train_dev",
+  "category": "excessive_speed",
+  "severity": "severe",
+  "duration_s": 10.0,
+  "baseline_audio_file": "data/audio/baselines/speech_02_churchill_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_02_churchill_excessive_speed_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_02_churchill_excessive_speed_2_01",
+      "category": "excessive_speed",
+      "start_s": 0.8,
+      "end_s": 3.55,
+      "transcript_slice": "fight on the beaches we shall fight on the landing grounds we",
+      "observed_value": 308.0,
+      "baseline_value": 140.0,
+      "unit": "WPM",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

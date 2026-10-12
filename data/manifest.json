@@ -1,937 +1,708 @@
 {
-  "dataset_version": "1.0.0",
-  "license": "CC-BY-4.0 & Public Domain Historical Speeches",
+  "dataset_name": "VoxContrast Spoken Speech Dataset",
+  "dataset_version": "2.0.0",
+  "provenance_class": "spoken_speech_v2",
+  "license": "CC-BY-4.0",
   "metadata": {
     "total_speech_texts": 6,
+    "total_audio_utterances": 24,
     "total_audio_pairs": 18,
-    "total_annotated_flaw_regions": 54,
-    "sample_rate_hz": 16000,
-    "provenance_description": "Paired contrastive speech dataset with ground truth acoustic flaw grounding across 5 dimensions."
+    "total_annotated_flaw_regions": 18,
+    "audio_sample_rate": 24000,
+    "audio_format": "PCM_16 mono WAV"
+  },
+  "splits": {
+    "train_dev": [
+      "pair_speech_01_gettysburg_excessive_speed_1",
+      "pair_speech_01_gettysburg_unnatural_pause_2",
+      "pair_speech_01_gettysburg_monotone_pitch_3",
+      "pair_speech_02_churchill_unnatural_pause_1",
+      "pair_speech_02_churchill_excessive_speed_2",
+      "pair_speech_02_churchill_muffled_articulation_3",
+      "pair_speech_03_kennedy_muffled_articulation_1",
+      "pair_speech_03_kennedy_monotone_pitch_2",
+      "pair_speech_03_kennedy_unstable_energy_3",
+      "pair_speech_04_keynote_monotone_pitch_1",
+      "pair_speech_04_keynote_excessive_speed_2",
+      "pair_speech_04_keynote_monotone_energy_3"
+    ],
+    "final_test": [
+      "pair_speech_05_defense_unstable_energy_1",
+      "pair_speech_05_defense_unnatural_pause_2",
+      "pair_speech_05_defense_muffled_articulation_3",
+      "pair_speech_06_debate_monotone_energy_1",
+      "pair_speech_06_debate_excessive_speed_2",
+      "pair_speech_06_debate_monotone_pitch_3"
+    ]
   },
   "speech_texts": [
     {
       "text_id": "speech_01_gettysburg",
-      "title": "Gettysburg Address Excerpt",
+      "title": "Abraham Lincoln - Gettysburg Address Excerpt",
       "canonical_transcript": "Four score and seven years ago our fathers brought forth on this continent a new nation conceived in liberty and dedicated to the proposition that all men are created equal.",
       "word_count": 30,
       "source_provenance": "Abraham Lincoln (1863), Public Domain US Historical Archives"
     },
     {
       "text_id": "speech_02_churchill",
-      "title": "We Shall Fight on the Beaches",
-      "canonical_transcript": "We shall fight on the beaches, we shall fight on the landing grounds, we shall fight in the fields and in the streets, we shall fight in the hills; we shall never surrender.",
+      "title": "Winston Churchill - We Shall Fight on the Beaches",
+      "canonical_transcript": "We shall fight on the beaches we shall fight on the landing grounds we shall fight in the fields and in the streets we shall fight in the hills we shall never surrender.",
       "word_count": 33,
       "source_provenance": "Winston Churchill (1940), Public Domain Parliamentary Address"
     },
     {
       "text_id": "speech_03_kennedy",
-      "title": "Inaugural Address Excerpt",
-      "canonical_transcript": "Ask not what your country can do for you; ask what you can do for your country. My fellow citizens of the world, ask not what America will do for you, but what together we can do for freedom.",
+      "title": "John F. Kennedy - Inaugural Address Excerpt",
+      "canonical_transcript": "Ask not what your country can do for you ask what you can do for your country. My fellow citizens of the world ask not what America will do for you but what together we can do for freedom.",
       "word_count": 39,
-      "source_provenance": "John F. Kennedy (1961), Public Domain Presidential Inaugural"
+      "source_provenance": "John F. Kennedy (1961), Public Domain US Presidential Address"
     },
     {
       "text_id": "speech_04_keynote",
       "title": "Next-Gen AI Keynote Announcement",
-      "canonical_transcript": "Today we are announcing an entirely new architecture that unifies real time audio synthesis and neural speech processing, delivering instantaneous clarity directly to everyone everywhere.",
+      "canonical_transcript": "Today we are announcing an entirely new architecture that unifies real time audio synthesis and neural speech processing delivering instantaneous clarity directly to everyone everywhere.",
       "word_count": 25,
-      "source_provenance": "Open Speech Corpus (2024), CC-BY-4.0 Tech Speech Benchmark"
+      "source_provenance": "Synthetic Technical Product Keynote (Creative Commons BY-4.0)"
     },
     {
       "text_id": "speech_05_defense",
       "title": "Academic Dissertation Defense",
       "canonical_transcript": "Our empirical evaluation demonstrates a statistically significant reduction in latency while maintaining rigorous mathematical bounds on convergence and acoustic fidelity across all testing environments.",
       "word_count": 24,
-      "source_provenance": "Academic Open Speech Repository (2023), CC-BY-4.0 Scientific Corpus"
+      "source_provenance": "Synthetic Academic Doctoral Defense (Creative Commons BY-4.0)"
     },
     {
       "text_id": "speech_06_debate",
       "title": "Competitive Policy Debate Opening",
-      "canonical_transcript": "The affirmative contention fails on three distinct warrants: first, the empirical baseline contradicts their model; second, their mechanism introduces severe delay; and third, the projected benefits dissolve under scrutiny.",
+      "canonical_transcript": "The affirmative contention fails on three distinct warrants first the empirical baseline contradicts their model second their mechanism introduces severe delay and third the projected benefits dissolve under scrutiny.",
       "word_count": 29,
-      "source_provenance": "National Debate Archive (2022), CC-BY-4.0 Public Speech Dataset"
+      "source_provenance": "Synthetic Competitive Debate Speech (Creative Commons BY-4.0)"
+    }
+  ],
+  "baselines": [
+    {
+      "text_id": "speech_01_gettysburg",
+      "split": "train_dev",
+      "audio_path": "data/audio/baselines/speech_01_gettysburg_baseline.wav",
+      "voice": "Samantha",
+      "duration_s": 10.56,
+      "sample_rate_hz": 24000,
+      "canonical_transcript": "Four score and seven years ago our fathers brought forth on this continent a new nation conceived in liberty and dedicated to the proposition that all men are created equal.",
+      "median_f0_hz": 152.2,
+      "f0_std_hz": 34.3,
+      "rms_dbfs": -17.5,
+      "average_wpm": 162.2,
+      "total_pause_s": 0.85
+    },
+    {
+      "text_id": "speech_02_churchill",
+      "split": "train_dev",
+      "audio_path": "data/audio/baselines/speech_02_churchill_baseline.wav",
+      "voice": "Samantha",
+      "duration_s": 11.04,
+      "sample_rate_hz": 24000,
+      "canonical_transcript": "We shall fight on the beaches we shall fight on the landing grounds we shall fight in the fields and in the streets we shall fight in the hills we shall never surrender.",
+      "median_f0_hz": 194.2,
+      "f0_std_hz": 44.8,
+      "rms_dbfs": -19.5,
+      "average_wpm": 131.0,
+      "total_pause_s": 1.4
+    },
+    {
+      "text_id": "speech_03_kennedy",
+      "split": "train_dev",
+      "audio_path": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+      "voice": "Samantha",
+      "duration_s": 14.56,
+      "sample_rate_hz": 24000,
+      "canonical_transcript": "Ask not what your country can do for you ask what you can do for your country. My fellow citizens of the world ask not what America will do for you but what together we can do for freedom.",
+      "median_f0_hz": 171.8,
+      "f0_std_hz": 49.9,
+      "rms_dbfs": -20.8,
+      "average_wpm": 136.3,
+      "total_pause_s": 3.6
+    },
+    {
+      "text_id": "speech_04_keynote",
+      "split": "train_dev",
+      "audio_path": "data/audio/baselines/speech_04_keynote_baseline.wav",
+      "voice": "Samantha",
+      "duration_s": 14.96,
+      "sample_rate_hz": 24000,
+      "canonical_transcript": "Today we are announcing an entirely new architecture that unifies real time audio synthesis and neural speech processing delivering instantaneous clarity directly to everyone everywhere.",
+      "median_f0_hz": 245.5,
+      "f0_std_hz": 53.4,
+      "rms_dbfs": -18.4,
+      "average_wpm": 154.8,
+      "total_pause_s": 2.35
+    },
+    {
+      "text_id": "speech_05_defense",
+      "split": "final_test",
+      "audio_path": "data/audio/baselines/speech_05_defense_baseline.wav",
+      "voice": "Samantha",
+      "duration_s": 15.52,
+      "sample_rate_hz": 24000,
+      "canonical_transcript": "Our empirical evaluation demonstrates a statistically significant reduction in latency while maintaining rigorous mathematical bounds on convergence and acoustic fidelity across all testing environments.",
+      "median_f0_hz": 241.8,
+      "f0_std_hz": 58.1,
+      "rms_dbfs": -20.0,
+      "average_wpm": 162.9,
+      "total_pause_s": 1.4
+    },
+    {
+      "text_id": "speech_06_debate",
+      "split": "final_test",
+      "audio_path": "data/audio/baselines/speech_06_debate_baseline.wav",
+      "voice": "Samantha",
+      "duration_s": 16.56,
+      "sample_rate_hz": 24000,
+      "canonical_transcript": "The affirmative contention fails on three distinct warrants first the empirical baseline contradicts their model second their mechanism introduces severe delay and third the projected benefits dissolve under scrutiny.",
+      "median_f0_hz": 158.6,
+      "f0_std_hz": 55.4,
+      "rms_dbfs": -22.3,
+      "average_wpm": 128.1,
+      "total_pause_s": 2.45
     }
   ],
   "pairs": [
     {
       "pair_id": "pair_speech_01_gettysburg_excessive_speed_1",
       "text_id": "speech_01_gettysburg",
+      "split": "train_dev",
       "baseline_audio": "data/audio/baselines/speech_01_gettysburg_baseline.wav",
       "flawed_audio": "data/audio/flawed/speech_01_gettysburg_excessive_speed_severe.wav",
       "flaw_category": "excessive_speed",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_m01",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 125.0
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
           "flaw_id": "gt_pair_speech_01_gettysburg_excessive_speed_1_01",
           "category": "excessive_speed",
-          "start_s": 0.7,
-          "end_s": 1.74,
-          "transcript_slice": "score and seven years",
-          "observed_value": 235.0,
-          "baseline_value": 135.0,
+          "start_s": 5.5,
+          "end_s": 5.9,
+          "transcript_slice": "new nation conceived",
+          "observed_value": 286.8,
+          "baseline_value": 140.0,
+          "unit": "WPM",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_01_gettysburg_excessive_speed_1_02",
-          "category": "excessive_speed",
-          "start_s": 2.59,
-          "end_s": 3.67,
-          "transcript_slice": "fathers brought forth on",
-          "observed_value": 240.0,
-          "baseline_value": 135.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_01_gettysburg_excessive_speed_1_03",
-          "category": "excessive_speed",
-          "start_s": 5.41,
-          "end_s": 6.51,
-          "transcript_slice": "a new nation conceived",
-          "observed_value": 230.0,
-          "baseline_value": 135.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
       "pair_id": "pair_speech_01_gettysburg_unnatural_pause_2",
       "text_id": "speech_01_gettysburg",
+      "split": "train_dev",
       "baseline_audio": "data/audio/baselines/speech_01_gettysburg_baseline.wav",
       "flawed_audio": "data/audio/flawed/speech_01_gettysburg_unnatural_pause_severe.wav",
       "flaw_category": "unnatural_pause",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_m01",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 125.0
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
           "flaw_id": "gt_pair_speech_01_gettysburg_unnatural_pause_2_01",
           "category": "unnatural_pause",
-          "start_s": 0.66,
-          "end_s": 2.86,
-          "transcript_slice": "[Pause between 'Four' and 'score']",
-          "observed_value": 2.2,
-          "baseline_value": 0.65,
+          "start_s": 17.4,
+          "end_s": 17.95,
+          "transcript_slice": "equal",
+          "observed_value": 0.55,
+          "baseline_value": 0.4,
+          "unit": "s",
           "severity": "severe",
-          "annotation_method": "acoustic_energy_silence_boundary"
-        },
-        {
-          "flaw_id": "gt_pair_speech_01_gettysburg_unnatural_pause_2_02",
-          "category": "unnatural_pause",
-          "start_s": 5.55,
-          "end_s": 8.05,
-          "transcript_slice": "[Pause between 'our' and 'fathers']",
-          "observed_value": 2.5,
-          "baseline_value": 0.65,
-          "severity": "severe",
-          "annotation_method": "acoustic_energy_silence_boundary"
-        },
-        {
-          "flaw_id": "gt_pair_speech_01_gettysburg_unnatural_pause_2_03",
-          "category": "unnatural_pause",
-          "start_s": 11.1,
-          "end_s": 13.2,
-          "transcript_slice": "[Pause between 'continent' and 'a']",
-          "observed_value": 2.1,
-          "baseline_value": 0.65,
-          "severity": "severe",
-          "annotation_method": "acoustic_energy_silence_boundary"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_unnatural_pause",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
       "pair_id": "pair_speech_01_gettysburg_monotone_pitch_3",
       "text_id": "speech_01_gettysburg",
+      "split": "train_dev",
       "baseline_audio": "data/audio/baselines/speech_01_gettysburg_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_01_gettysburg_monotone_pitch_moderate.wav",
+      "flawed_audio": "data/audio/flawed/speech_01_gettysburg_monotone_pitch_severe.wav",
       "flaw_category": "monotone_pitch",
-      "severity": "moderate",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_m01",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 125.0
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
           "flaw_id": "gt_pair_speech_01_gettysburg_monotone_pitch_3_01",
           "category": "monotone_pitch",
-          "start_s": 0.7,
-          "end_s": 2.53,
-          "transcript_slice": "score and seven years",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        },
-        {
-          "flaw_id": "gt_pair_speech_01_gettysburg_monotone_pitch_3_02",
-          "category": "monotone_pitch",
-          "start_s": 3.39,
-          "end_s": 5.33,
-          "transcript_slice": "fathers brought forth on",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        },
-        {
-          "flaw_id": "gt_pair_speech_01_gettysburg_monotone_pitch_3_03",
-          "category": "monotone_pitch",
-          "start_s": 7.09,
-          "end_s": 8.99,
-          "transcript_slice": "a new nation conceived",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        }
-      ]
-    },
-    {
-      "pair_id": "pair_speech_02_churchill_unstable_energy_1",
-      "text_id": "speech_02_churchill",
-      "baseline_audio": "data/audio/baselines/speech_02_churchill_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_02_churchill_unstable_energy_severe.wav",
-      "flaw_category": "unstable_energy",
-      "severity": "severe",
-      "speaker_metadata": {
-        "speaker_id": "spk_m02",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 115.0
-      },
-      "ground_truth_flaws": [
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_unstable_energy_1_01",
-          "category": "unstable_energy",
-          "start_s": 0.63,
-          "end_s": 2.35,
-          "transcript_slice": "shall fight on the",
-          "observed_value": 18.0,
-          "baseline_value": 8.0,
+          "start_s": 1.0,
+          "end_s": 4.4,
+          "transcript_slice": "Four score and seven years ago our fathers",
+          "observed_value": 1.97,
+          "baseline_value": 3.5,
+          "unit": "ST",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_unstable_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_unstable_energy_1_02",
-          "category": "unstable_energy",
-          "start_s": 3.36,
-          "end_s": 5.08,
-          "transcript_slice": "shall fight on the",
-          "observed_value": 18.0,
-          "baseline_value": 8.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_unstable_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_unstable_energy_1_03",
-          "category": "unstable_energy",
-          "start_s": 6.91,
-          "end_s": 8.6,
-          "transcript_slice": "we shall fight in",
-          "observed_value": 18.0,
-          "baseline_value": 8.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_unstable_energy"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_pitch",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_02_churchill_monotone_energy_2",
+      "pair_id": "pair_speech_02_churchill_unnatural_pause_1",
       "text_id": "speech_02_churchill",
+      "split": "train_dev",
       "baseline_audio": "data/audio/baselines/speech_02_churchill_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_02_churchill_monotone_energy_moderate.wav",
-      "flaw_category": "monotone_energy",
-      "severity": "moderate",
-      "speaker_metadata": {
-        "speaker_id": "spk_m02",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 115.0
-      },
-      "ground_truth_flaws": [
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_monotone_energy_2_01",
-          "category": "monotone_energy",
-          "start_s": 0.63,
-          "end_s": 2.35,
-          "transcript_slice": "shall fight on the",
-          "observed_value": 0.75,
-          "baseline_value": 5.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_monotone_energy_2_02",
-          "category": "monotone_energy",
-          "start_s": 3.36,
-          "end_s": 5.08,
-          "transcript_slice": "shall fight on the",
-          "observed_value": 0.75,
-          "baseline_value": 5.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_monotone_energy_2_03",
-          "category": "monotone_energy",
-          "start_s": 6.91,
-          "end_s": 8.6,
-          "transcript_slice": "we shall fight in",
-          "observed_value": 0.75,
-          "baseline_value": 5.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_energy"
-        }
-      ]
-    },
-    {
-      "pair_id": "pair_speech_02_churchill_excessive_speed_3",
-      "text_id": "speech_02_churchill",
-      "baseline_audio": "data/audio/baselines/speech_02_churchill_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_02_churchill_excessive_speed_moderate.wav",
-      "flaw_category": "excessive_speed",
-      "severity": "moderate",
-      "speaker_metadata": {
-        "speaker_id": "spk_m02",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 115.0
-      },
-      "ground_truth_flaws": [
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_excessive_speed_3_01",
-          "category": "excessive_speed",
-          "start_s": 0.63,
-          "end_s": 1.61,
-          "transcript_slice": "shall fight on the",
-          "observed_value": 235.0,
-          "baseline_value": 135.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_excessive_speed_3_02",
-          "category": "excessive_speed",
-          "start_s": 2.6,
-          "end_s": 3.56,
-          "transcript_slice": "shall fight on the",
-          "observed_value": 240.0,
-          "baseline_value": 135.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_02_churchill_excessive_speed_3_03",
-          "category": "excessive_speed",
-          "start_s": 5.37,
-          "end_s": 6.35,
-          "transcript_slice": "we shall fight in",
-          "observed_value": 230.0,
-          "baseline_value": 135.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        }
-      ]
-    },
-    {
-      "pair_id": "pair_speech_03_kennedy_unnatural_pause_1",
-      "text_id": "speech_03_kennedy",
-      "baseline_audio": "data/audio/baselines/speech_03_kennedy_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_03_kennedy_unnatural_pause_severe.wav",
+      "flawed_audio": "data/audio/flawed/speech_02_churchill_unnatural_pause_severe.wav",
       "flaw_category": "unnatural_pause",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_m03",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 135.0
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_03_kennedy_unnatural_pause_1_01",
+          "flaw_id": "gt_pair_speech_02_churchill_unnatural_pause_1_01",
           "category": "unnatural_pause",
-          "start_s": 0.62,
-          "end_s": 2.82,
-          "transcript_slice": "[Pause between 'Ask' and 'not']",
-          "observed_value": 2.2,
-          "baseline_value": 0.65,
+          "start_s": 3.3,
+          "end_s": 4.0,
+          "transcript_slice": "beaches we shall",
+          "observed_value": 0.7,
+          "baseline_value": 0.4,
+          "unit": "s",
           "severity": "severe",
-          "annotation_method": "acoustic_energy_silence_boundary"
-        },
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_unnatural_pause_1_02",
-          "category": "unnatural_pause",
-          "start_s": 5.48,
-          "end_s": 7.98,
-          "transcript_slice": "[Pause between 'do' and 'for']",
-          "observed_value": 2.5,
-          "baseline_value": 0.65,
-          "severity": "severe",
-          "annotation_method": "acoustic_energy_silence_boundary"
-        },
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_unnatural_pause_1_03",
-          "category": "unnatural_pause",
-          "start_s": 10.53,
-          "end_s": 12.63,
-          "transcript_slice": "[Pause between 'can' and 'do']",
-          "observed_value": 2.1,
-          "baseline_value": 0.65,
-          "severity": "severe",
-          "annotation_method": "acoustic_energy_silence_boundary"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_unnatural_pause",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_03_kennedy_pitch_irregularity_2",
-      "text_id": "speech_03_kennedy",
-      "baseline_audio": "data/audio/baselines/speech_03_kennedy_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_03_kennedy_pitch_irregularity_severe.wav",
-      "flaw_category": "pitch_irregularity",
-      "severity": "severe",
-      "speaker_metadata": {
-        "speaker_id": "spk_m03",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 135.0
-      },
-      "ground_truth_flaws": [
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_pitch_irregularity_2_01",
-          "category": "pitch_irregularity",
-          "start_s": 0.66,
-          "end_s": 2.49,
-          "transcript_slice": "not what your country",
-          "observed_value": 4.5,
-          "baseline_value": 1.8,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_pitch_irregularity"
-        },
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_pitch_irregularity_2_02",
-          "category": "pitch_irregularity",
-          "start_s": 3.32,
-          "end_s": 5.01,
-          "transcript_slice": "for you; ask what",
-          "observed_value": 4.5,
-          "baseline_value": 1.8,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_pitch_irregularity"
-        },
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_pitch_irregularity_2_03",
-          "category": "pitch_irregularity",
-          "start_s": 6.52,
-          "end_s": 8.31,
-          "transcript_slice": "do for your country.",
-          "observed_value": 4.5,
-          "baseline_value": 1.8,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_pitch_irregularity"
-        }
-      ]
-    },
-    {
-      "pair_id": "pair_speech_03_kennedy_muffled_articulation_3",
-      "text_id": "speech_03_kennedy",
-      "baseline_audio": "data/audio/baselines/speech_03_kennedy_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_03_kennedy_muffled_articulation_moderate.wav",
-      "flaw_category": "muffled_articulation",
-      "severity": "moderate",
-      "speaker_metadata": {
-        "speaker_id": "spk_m03",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 135.0
-      },
-      "ground_truth_flaws": [
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_muffled_articulation_3_01",
-          "category": "muffled_articulation",
-          "start_s": 0.66,
-          "end_s": 2.49,
-          "transcript_slice": "not what your country",
-          "observed_value": 720.0,
-          "baseline_value": 2100.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_muffled_articulation"
-        },
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_muffled_articulation_3_02",
-          "category": "muffled_articulation",
-          "start_s": 3.32,
-          "end_s": 5.01,
-          "transcript_slice": "for you; ask what",
-          "observed_value": 720.0,
-          "baseline_value": 2100.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_muffled_articulation"
-        },
-        {
-          "flaw_id": "gt_pair_speech_03_kennedy_muffled_articulation_3_03",
-          "category": "muffled_articulation",
-          "start_s": 6.52,
-          "end_s": 8.31,
-          "transcript_slice": "do for your country.",
-          "observed_value": 720.0,
-          "baseline_value": 2100.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_muffled_articulation"
-        }
-      ]
-    },
-    {
-      "pair_id": "pair_speech_04_keynote_excessive_speed_1",
-      "text_id": "speech_04_keynote",
-      "baseline_audio": "data/audio/baselines/speech_04_keynote_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_04_keynote_excessive_speed_severe.wav",
+      "pair_id": "pair_speech_02_churchill_excessive_speed_2",
+      "text_id": "speech_02_churchill",
+      "split": "train_dev",
+      "baseline_audio": "data/audio/baselines/speech_02_churchill_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_02_churchill_excessive_speed_severe.wav",
       "flaw_category": "excessive_speed",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_f01",
+        "voice": "Samantha",
         "gender": "female",
-        "native_language": "en",
-        "median_f0_hz": 210.0
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_1_01",
+          "flaw_id": "gt_pair_speech_02_churchill_excessive_speed_2_01",
           "category": "excessive_speed",
-          "start_s": 0.73,
-          "end_s": 1.75,
-          "transcript_slice": "we are announcing an",
-          "observed_value": 235.0,
-          "baseline_value": 135.0,
+          "start_s": 0.8,
+          "end_s": 3.55,
+          "transcript_slice": "fight on the beaches we shall fight on the landing grounds we",
+          "observed_value": 308.0,
+          "baseline_value": 140.0,
+          "unit": "WPM",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_1_02",
-          "category": "excessive_speed",
-          "start_s": 2.78,
-          "end_s": 3.98,
-          "transcript_slice": "architecture that unifies real",
-          "observed_value": 240.0,
-          "baseline_value": 135.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_1_03",
-          "category": "excessive_speed",
-          "start_s": 5.58,
-          "end_s": 6.77,
-          "transcript_slice": "synthesis and neural speech",
-          "observed_value": 230.0,
-          "baseline_value": 135.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_04_keynote_monotone_pitch_2",
+      "pair_id": "pair_speech_02_churchill_muffled_articulation_3",
+      "text_id": "speech_02_churchill",
+      "split": "train_dev",
+      "baseline_audio": "data/audio/baselines/speech_02_churchill_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_02_churchill_muffled_articulation_severe.wav",
+      "flaw_category": "muffled_articulation",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
+      "speaker_metadata": {
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
+      },
+      "ground_truth_flaws": [
+        {
+          "flaw_id": "gt_pair_speech_02_churchill_muffled_articulation_3_01",
+          "category": "muffled_articulation",
+          "start_s": 4.5,
+          "end_s": 5.8,
+          "transcript_slice": "fight on the landing",
+          "observed_value": 741.8,
+          "baseline_value": 2100.0,
+          "unit": "Hz",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_muffled_articulation",
+          "validation_status": "CONFIRMED"
+        }
+      ]
+    },
+    {
+      "pair_id": "pair_speech_03_kennedy_muffled_articulation_1",
+      "text_id": "speech_03_kennedy",
+      "split": "train_dev",
+      "baseline_audio": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_03_kennedy_muffled_articulation_severe.wav",
+      "flaw_category": "muffled_articulation",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
+      "speaker_metadata": {
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
+      },
+      "ground_truth_flaws": [
+        {
+          "flaw_id": "gt_pair_speech_03_kennedy_muffled_articulation_1_01",
+          "category": "muffled_articulation",
+          "start_s": 14.55,
+          "end_s": 15.9,
+          "transcript_slice": "America will do for",
+          "observed_value": 736.3,
+          "baseline_value": 2100.0,
+          "unit": "Hz",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_muffled_articulation",
+          "validation_status": "CONFIRMED"
+        }
+      ]
+    },
+    {
+      "pair_id": "pair_speech_03_kennedy_monotone_pitch_2",
+      "text_id": "speech_03_kennedy",
+      "split": "train_dev",
+      "baseline_audio": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_03_kennedy_monotone_pitch_severe.wav",
+      "flaw_category": "monotone_pitch",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
+      "speaker_metadata": {
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
+      },
+      "ground_truth_flaws": [
+        {
+          "flaw_id": "gt_pair_speech_03_kennedy_monotone_pitch_2_01",
+          "category": "monotone_pitch",
+          "start_s": 7.4,
+          "end_s": 9.4,
+          "transcript_slice": "country My fellow citizens of the",
+          "observed_value": 2.14,
+          "baseline_value": 3.5,
+          "unit": "ST",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_pitch",
+          "validation_status": "CONFIRMED"
+        }
+      ]
+    },
+    {
+      "pair_id": "pair_speech_03_kennedy_unstable_energy_3",
+      "text_id": "speech_03_kennedy",
+      "split": "train_dev",
+      "baseline_audio": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_03_kennedy_unstable_energy_severe.wav",
+      "flaw_category": "unstable_energy",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
+      "speaker_metadata": {
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
+      },
+      "ground_truth_flaws": [
+        {
+          "flaw_id": "gt_pair_speech_03_kennedy_unstable_energy_3_01",
+          "category": "unstable_energy",
+          "start_s": 7.88,
+          "end_s": 8.7,
+          "transcript_slice": "will do for you but",
+          "observed_value": 17.87,
+          "baseline_value": 8.0,
+          "unit": "dB",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_unstable_energy",
+          "validation_status": "CONFIRMED"
+        }
+      ]
+    },
+    {
+      "pair_id": "pair_speech_04_keynote_monotone_pitch_1",
       "text_id": "speech_04_keynote",
+      "split": "train_dev",
       "baseline_audio": "data/audio/baselines/speech_04_keynote_baseline.wav",
       "flawed_audio": "data/audio/flawed/speech_04_keynote_monotone_pitch_severe.wav",
       "flaw_category": "monotone_pitch",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_f01",
+        "voice": "Samantha",
         "gender": "female",
-        "native_language": "en",
-        "median_f0_hz": 210.0
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_2_01",
+          "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_1_01",
           "category": "monotone_pitch",
-          "start_s": 0.73,
-          "end_s": 2.53,
-          "transcript_slice": "we are announcing an",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
+          "start_s": 12.9,
+          "end_s": 14.4,
+          "transcript_slice": "directly to everyone everywhere",
+          "observed_value": 2.28,
+          "baseline_value": 3.5,
+          "unit": "ST",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        },
-        {
-          "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_2_02",
-          "category": "monotone_pitch",
-          "start_s": 3.57,
-          "end_s": 5.72,
-          "transcript_slice": "architecture that unifies real",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        },
-        {
-          "flaw_id": "gt_pair_speech_04_keynote_monotone_pitch_2_03",
-          "category": "monotone_pitch",
-          "start_s": 7.34,
-          "end_s": 9.38,
-          "transcript_slice": "synthesis and neural speech",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_pitch",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_04_keynote_unstable_energy_3",
+      "pair_id": "pair_speech_04_keynote_excessive_speed_2",
       "text_id": "speech_04_keynote",
+      "split": "train_dev",
       "baseline_audio": "data/audio/baselines/speech_04_keynote_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_04_keynote_unstable_energy_moderate.wav",
-      "flaw_category": "unstable_energy",
-      "severity": "moderate",
+      "flawed_audio": "data/audio/flawed/speech_04_keynote_excessive_speed_severe.wav",
+      "flaw_category": "excessive_speed",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_f01",
+        "voice": "Samantha",
         "gender": "female",
-        "native_language": "en",
-        "median_f0_hz": 210.0
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_04_keynote_unstable_energy_3_01",
-          "category": "unstable_energy",
-          "start_s": 0.73,
-          "end_s": 2.53,
-          "transcript_slice": "we are announcing an",
-          "observed_value": 18.0,
-          "baseline_value": 8.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_unstable_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_04_keynote_unstable_energy_3_02",
-          "category": "unstable_energy",
-          "start_s": 3.57,
-          "end_s": 5.72,
-          "transcript_slice": "architecture that unifies real",
-          "observed_value": 18.0,
-          "baseline_value": 8.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_unstable_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_04_keynote_unstable_energy_3_03",
-          "category": "unstable_energy",
-          "start_s": 7.34,
-          "end_s": 9.38,
-          "transcript_slice": "synthesis and neural speech",
-          "observed_value": 18.0,
-          "baseline_value": 8.0,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_unstable_energy"
+          "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_2_01",
+          "category": "excessive_speed",
+          "start_s": 4.0,
+          "end_s": 4.9,
+          "transcript_slice": "unifies real time audio",
+          "observed_value": 205.1,
+          "baseline_value": 140.0,
+          "unit": "WPM",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_05_defense_muffled_articulation_1",
-      "text_id": "speech_05_defense",
-      "baseline_audio": "data/audio/baselines/speech_05_defense_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_05_defense_muffled_articulation_severe.wav",
-      "flaw_category": "muffled_articulation",
-      "severity": "severe",
+      "pair_id": "pair_speech_04_keynote_monotone_energy_3",
+      "text_id": "speech_04_keynote",
+      "split": "train_dev",
+      "baseline_audio": "data/audio/baselines/speech_04_keynote_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_04_keynote_monotone_energy_moderate.wav",
+      "flaw_category": "monotone_energy",
+      "severity": "moderate",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_f02",
+        "voice": "Samantha",
         "gender": "female",
-        "native_language": "en",
-        "median_f0_hz": 195.0
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_05_defense_muffled_articulation_1_01",
-          "category": "muffled_articulation",
-          "start_s": 0.66,
-          "end_s": 3.02,
-          "transcript_slice": "empirical evaluation demonstrates a",
-          "observed_value": 720.0,
-          "baseline_value": 2100.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_muffled_articulation"
-        },
+          "flaw_id": "gt_pair_speech_04_keynote_monotone_energy_3_01",
+          "category": "monotone_energy",
+          "start_s": 11.4,
+          "end_s": 12.55,
+          "transcript_slice": "processing delivering instantaneous",
+          "observed_value": 2.44,
+          "baseline_value": 5.5,
+          "unit": "dB",
+          "severity": "moderate",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_energy",
+          "validation_status": "CONFIRMED"
+        }
+      ]
+    },
+    {
+      "pair_id": "pair_speech_05_defense_unstable_energy_1",
+      "text_id": "speech_05_defense",
+      "split": "final_test",
+      "baseline_audio": "data/audio/baselines/speech_05_defense_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_05_defense_unstable_energy_severe.wav",
+      "flaw_category": "unstable_energy",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
+      "speaker_metadata": {
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
+      },
+      "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_05_defense_muffled_articulation_1_02",
-          "category": "muffled_articulation",
-          "start_s": 4.53,
-          "end_s": 6.53,
-          "transcript_slice": "reduction in latency while",
-          "observed_value": 720.0,
-          "baseline_value": 2100.0,
+          "flaw_id": "gt_pair_speech_05_defense_unstable_energy_1_01",
+          "category": "unstable_energy",
+          "start_s": 7.78,
+          "end_s": 8.35,
+          "transcript_slice": "while maintaining",
+          "observed_value": 13.8,
+          "baseline_value": 8.0,
+          "unit": "dB",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_muffled_articulation"
-        },
-        {
-          "flaw_id": "gt_pair_speech_05_defense_muffled_articulation_1_03",
-          "category": "muffled_articulation",
-          "start_s": 8.51,
-          "end_s": 10.8,
-          "transcript_slice": "mathematical bounds on convergence",
-          "observed_value": 720.0,
-          "baseline_value": 2100.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_muffled_articulation"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_unstable_energy",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
       "pair_id": "pair_speech_05_defense_unnatural_pause_2",
       "text_id": "speech_05_defense",
+      "split": "final_test",
       "baseline_audio": "data/audio/baselines/speech_05_defense_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_05_defense_unnatural_pause_moderate.wav",
+      "flawed_audio": "data/audio/flawed/speech_05_defense_unnatural_pause_severe.wav",
       "flaw_category": "unnatural_pause",
-      "severity": "moderate",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_f02",
+        "voice": "Samantha",
         "gender": "female",
-        "native_language": "en",
-        "median_f0_hz": 195.0
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
           "flaw_id": "gt_pair_speech_05_defense_unnatural_pause_2_01",
           "category": "unnatural_pause",
-          "start_s": 0.62,
-          "end_s": 2.82,
-          "transcript_slice": "[Pause between 'Our' and 'empirical']",
-          "observed_value": 2.2,
-          "baseline_value": 0.65,
-          "severity": "moderate",
-          "annotation_method": "acoustic_energy_silence_boundary"
-        },
-        {
-          "flaw_id": "gt_pair_speech_05_defense_unnatural_pause_2_02",
-          "category": "unnatural_pause",
-          "start_s": 6.69,
-          "end_s": 9.19,
-          "transcript_slice": "[Pause between 'significant' and 'reduction']",
-          "observed_value": 2.5,
-          "baseline_value": 0.65,
-          "severity": "moderate",
-          "annotation_method": "acoustic_energy_silence_boundary"
-        },
-        {
-          "flaw_id": "gt_pair_speech_05_defense_unnatural_pause_2_03",
-          "category": "unnatural_pause",
-          "start_s": 12.52,
-          "end_s": 14.62,
-          "transcript_slice": "[Pause between 'rigorous' and 'mathematical']",
-          "observed_value": 2.1,
-          "baseline_value": 0.65,
-          "severity": "moderate",
-          "annotation_method": "acoustic_energy_silence_boundary"
+          "start_s": 6.05,
+          "end_s": 6.7,
+          "transcript_slice": "reduction in latency",
+          "observed_value": 0.65,
+          "baseline_value": 0.4,
+          "unit": "s",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_unnatural_pause",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_05_defense_monotone_energy_3",
+      "pair_id": "pair_speech_05_defense_muffled_articulation_3",
       "text_id": "speech_05_defense",
+      "split": "final_test",
       "baseline_audio": "data/audio/baselines/speech_05_defense_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_05_defense_monotone_energy_moderate.wav",
-      "flaw_category": "monotone_energy",
-      "severity": "moderate",
+      "flawed_audio": "data/audio/flawed/speech_05_defense_muffled_articulation_severe.wav",
+      "flaw_category": "muffled_articulation",
+      "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_f02",
+        "voice": "Samantha",
         "gender": "female",
-        "native_language": "en",
-        "median_f0_hz": 195.0
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_05_defense_monotone_energy_3_01",
-          "category": "monotone_energy",
-          "start_s": 0.66,
-          "end_s": 3.02,
-          "transcript_slice": "empirical evaluation demonstrates a",
-          "observed_value": 0.75,
-          "baseline_value": 5.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_05_defense_monotone_energy_3_02",
-          "category": "monotone_energy",
-          "start_s": 4.53,
-          "end_s": 6.53,
-          "transcript_slice": "reduction in latency while",
-          "observed_value": 0.75,
-          "baseline_value": 5.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_energy"
-        },
-        {
-          "flaw_id": "gt_pair_speech_05_defense_monotone_energy_3_03",
-          "category": "monotone_energy",
-          "start_s": 8.51,
-          "end_s": 10.8,
-          "transcript_slice": "mathematical bounds on convergence",
-          "observed_value": 0.75,
-          "baseline_value": 5.5,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_monotone_energy"
+          "flaw_id": "gt_pair_speech_05_defense_muffled_articulation_3_01",
+          "category": "muffled_articulation",
+          "start_s": 13.8,
+          "end_s": 14.9,
+          "transcript_slice": "rigorous mathematical",
+          "observed_value": 732.1,
+          "baseline_value": 2100.0,
+          "unit": "Hz",
+          "severity": "severe",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_muffled_articulation",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
-      "pair_id": "pair_speech_06_debate_excessive_speed_1",
+      "pair_id": "pair_speech_06_debate_monotone_energy_1",
       "text_id": "speech_06_debate",
+      "split": "final_test",
+      "baseline_audio": "data/audio/baselines/speech_06_debate_baseline.wav",
+      "flawed_audio": "data/audio/flawed/speech_06_debate_monotone_energy_moderate.wav",
+      "flaw_category": "monotone_energy",
+      "severity": "moderate",
+      "validation_status": "CONFIRMED",
+      "speaker_metadata": {
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
+      },
+      "ground_truth_flaws": [
+        {
+          "flaw_id": "gt_pair_speech_06_debate_monotone_energy_1_01",
+          "category": "monotone_energy",
+          "start_s": 11.0,
+          "end_s": 12.3,
+          "transcript_slice": "their mechanism introduces",
+          "observed_value": 2.32,
+          "baseline_value": 5.5,
+          "unit": "dB",
+          "severity": "moderate",
+          "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_energy",
+          "validation_status": "CONFIRMED"
+        }
+      ]
+    },
+    {
+      "pair_id": "pair_speech_06_debate_excessive_speed_2",
+      "text_id": "speech_06_debate",
+      "split": "final_test",
       "baseline_audio": "data/audio/baselines/speech_06_debate_baseline.wav",
       "flawed_audio": "data/audio/flawed/speech_06_debate_excessive_speed_severe.wav",
       "flaw_category": "excessive_speed",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_m04",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 140.0
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
-          "flaw_id": "gt_pair_speech_06_debate_excessive_speed_1_01",
+          "flaw_id": "gt_pair_speech_06_debate_excessive_speed_2_01",
           "category": "excessive_speed",
-          "start_s": 0.66,
-          "end_s": 1.91,
-          "transcript_slice": "affirmative contention fails on",
-          "observed_value": 235.0,
-          "baseline_value": 135.0,
+          "start_s": 9.75,
+          "end_s": 10.1,
+          "transcript_slice": "delay and",
+          "observed_value": 188.8,
+          "baseline_value": 140.0,
+          "unit": "WPM",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_06_debate_excessive_speed_1_02",
-          "category": "excessive_speed",
-          "start_s": 3.0,
-          "end_s": 4.2,
-          "transcript_slice": "warrants: first, the empirical",
-          "observed_value": 240.0,
-          "baseline_value": 135.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        },
-        {
-          "flaw_id": "gt_pair_speech_06_debate_excessive_speed_1_03",
-          "category": "excessive_speed",
-          "start_s": 6.16,
-          "end_s": 7.33,
-          "transcript_slice": "their model; second, their",
-          "observed_value": 230.0,
-          "baseline_value": 135.0,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_excessive_speed"
-        }
-      ]
-    },
-    {
-      "pair_id": "pair_speech_06_debate_pitch_irregularity_2",
-      "text_id": "speech_06_debate",
-      "baseline_audio": "data/audio/baselines/speech_06_debate_baseline.wav",
-      "flawed_audio": "data/audio/flawed/speech_06_debate_pitch_irregularity_moderate.wav",
-      "flaw_category": "pitch_irregularity",
-      "severity": "moderate",
-      "speaker_metadata": {
-        "speaker_id": "spk_m04",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 140.0
-      },
-      "ground_truth_flaws": [
-        {
-          "flaw_id": "gt_pair_speech_06_debate_pitch_irregularity_2_01",
-          "category": "pitch_irregularity",
-          "start_s": 0.66,
-          "end_s": 2.85,
-          "transcript_slice": "affirmative contention fails on",
-          "observed_value": 4.5,
-          "baseline_value": 1.8,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_pitch_irregularity"
-        },
-        {
-          "flaw_id": "gt_pair_speech_06_debate_pitch_irregularity_2_02",
-          "category": "pitch_irregularity",
-          "start_s": 3.96,
-          "end_s": 6.11,
-          "transcript_slice": "warrants: first, the empirical",
-          "observed_value": 4.5,
-          "baseline_value": 1.8,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_pitch_irregularity"
-        },
-        {
-          "flaw_id": "gt_pair_speech_06_debate_pitch_irregularity_2_03",
-          "category": "pitch_irregularity",
-          "start_s": 8.09,
-          "end_s": 10.09,
-          "transcript_slice": "their model; second, their",
-          "observed_value": 4.5,
-          "baseline_value": 1.8,
-          "severity": "moderate",
-          "annotation_method": "grounded_flaw_injection_pitch_irregularity"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+          "validation_status": "CONFIRMED"
         }
       ]
     },
     {
       "pair_id": "pair_speech_06_debate_monotone_pitch_3",
       "text_id": "speech_06_debate",
+      "split": "final_test",
       "baseline_audio": "data/audio/baselines/speech_06_debate_baseline.wav",
       "flawed_audio": "data/audio/flawed/speech_06_debate_monotone_pitch_severe.wav",
       "flaw_category": "monotone_pitch",
       "severity": "severe",
+      "validation_status": "CONFIRMED",
       "speaker_metadata": {
-        "speaker_id": "spk_m04",
-        "gender": "male",
-        "native_language": "en",
-        "median_f0_hz": 140.0
+        "voice": "Samantha",
+        "gender": "female",
+        "native_language": "en"
       },
       "ground_truth_flaws": [
         {
           "flaw_id": "gt_pair_speech_06_debate_monotone_pitch_3_01",
           "category": "monotone_pitch",
-          "start_s": 0.66,
-          "end_s": 2.85,
-          "transcript_slice": "affirmative contention fails on",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
+          "start_s": 5.4,
+          "end_s": 6.15,
+          "transcript_slice": "empirical baseline",
+          "observed_value": 2.24,
+          "baseline_value": 3.5,
+          "unit": "ST",
           "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        },
-        {
-          "flaw_id": "gt_pair_speech_06_debate_monotone_pitch_3_02",
-          "category": "monotone_pitch",
-          "start_s": 3.96,
-          "end_s": 6.11,
-          "transcript_slice": "warrants: first, the empirical",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
-        },
-        {
-          "flaw_id": "gt_pair_speech_06_debate_monotone_pitch_3_03",
-          "category": "monotone_pitch",
-          "start_s": 8.09,
-          "end_s": 10.09,
-          "transcript_slice": "their model; second, their",
-          "observed_value": 0.2,
-          "baseline_value": 2.5,
-          "severity": "severe",
-          "annotation_method": "grounded_flaw_injection_monotone_pitch"
+          "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_pitch",
+          "validation_status": "CONFIRMED"
         }
       ]
     }

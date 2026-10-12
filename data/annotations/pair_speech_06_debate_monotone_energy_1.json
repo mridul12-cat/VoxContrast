@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_06_debate_monotone_energy_1",
+  "text_id": "speech_06_debate",
+  "split": "final_test",
+  "category": "monotone_energy",
+  "severity": "moderate",
+  "duration_s": 19.36,
+  "baseline_audio_file": "data/audio/baselines/speech_06_debate_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_06_debate_monotone_energy_moderate.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_06_debate_monotone_energy_1_01",
+      "category": "monotone_energy",
+      "start_s": 11.0,
+      "end_s": 12.3,
+      "transcript_slice": "their mechanism introduces",
+      "observed_value": 2.32,
+      "baseline_value": 5.5,
+      "unit": "dB",
+      "severity": "moderate",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_monotone_energy",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

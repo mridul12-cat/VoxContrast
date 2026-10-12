@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_03_kennedy_unstable_energy_3",
+  "text_id": "speech_03_kennedy",
+  "split": "train_dev",
+  "category": "unstable_energy",
+  "severity": "severe",
+  "duration_s": 11.2,
+  "baseline_audio_file": "data/audio/baselines/speech_03_kennedy_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_03_kennedy_unstable_energy_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_03_kennedy_unstable_energy_3_01",
+      "category": "unstable_energy",
+      "start_s": 7.88,
+      "end_s": 8.7,
+      "transcript_slice": "will do for you but",
+      "observed_value": 17.87,
+      "baseline_value": 8.0,
+      "unit": "dB",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_unstable_energy",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

@@ -168,7 +168,7 @@ def extract_acoustic_contours(
                         start_s=pause_start,
                         end_s=t,
                         duration_s=pause_dur,
-                        is_excessive=(pause_dur >= 1.80)
+                        is_excessive=(pause_dur >= 0.60)
                     )
                 )
 
@@ -181,7 +181,7 @@ def extract_acoustic_contours(
                     start_s=pause_start,
                     end_s=last_t,
                     duration_s=pause_dur,
-                    is_excessive=(pause_dur >= 1.80)
+                    is_excessive=(pause_dur >= 0.60)
                 )
             )
 
@@ -222,11 +222,12 @@ def estimate_local_wpm(
     f0_contour: list[float],
     time_stamps: list[float],
     time_step_s: float,
-    window_s: float = 0.5
+    window_s: float = 1.0
 ) -> list[float]:
     """
-    Estimates local speech rate (WPM) over sliding windows using syllabic energy
-    peaks within voiced segments normalized by English syllable-per-word ratio (~1.45).
+    Estimates local speech rate (WPM) strictly causally using historical syllabic
+    energy peaks in voiced segments up to the current timestamp t, normalized
+    by English syllable-per-word ratio (~1.45).
     """
     n_frames = len(rms_db)
     wpm_contour = [0.0] * n_frames
@@ -257,27 +258,34 @@ def estimate_local_wpm(
             wpm_contour[i] = 0.0
             continue
 
-        # Count peaks in [t - window_s/2, t + window_s/2]
-        win_start = max(0.0, t - window_s / 2.0)
-        win_end = min(time_stamps[-1], t + window_s / 2.0)
-        win_dur = max(0.15, win_end - win_start)
+        # Causal window [t - window_s, t]
+        win_start = max(0.0, t - window_s)
+        win_dur = max(0.20, t - win_start)
 
-        cnt = sum(1 for pt in peak_times if win_start <= pt <= win_end)
-        # Syllable density converted to words per minute
-        spm = (cnt / win_dur) * 60.0
-        dens_wpm = spm / SYLLABLES_PER_WORD
+        # Count peaks strictly within [win_start, t]
+        cnt = sum(1 for pt in peak_times if win_start <= pt <= t)
+        raw_dens = (cnt / win_dur) * 60.0 / SYLLABLES_PER_WORD
 
-        # Inter-peak instantaneous rate
-        prev_p = [pt for pt in peak_times if pt <= t]
-        next_p = [pt for pt in peak_times if pt > t]
-        inst_wpm = 135.0
-        if prev_p and next_p:
-            delta = next_p[0] - prev_p[-1]
-            if 0.08 <= delta < 0.70:
+        # Smooth startup transient during initial audio onset (< 0.6s)
+        if win_dur < 0.60:
+            alpha = win_dur / 0.60
+            dens_wpm = alpha * raw_dens + (1.0 - alpha) * 140.0
+        else:
+            dens_wpm = raw_dens
+
+        # Causal instantaneous rate: two most recent peaks <= t
+        recent_p = [pt for pt in peak_times if pt <= t]
+        if len(recent_p) >= 2:
+            delta = recent_p[-1] - recent_p[-2]
+            if 0.09 <= delta < 0.60:
                 inst_wpm = 60.0 / (delta * SYLLABLES_PER_WORD)
+            else:
+                inst_wpm = dens_wpm
+        else:
+            inst_wpm = dens_wpm
 
         # Blend instantaneous with window density when both confirm acceleration
-        if inst_wpm >= 175.0 and dens_wpm >= 160.0:
+        if inst_wpm >= 180.0 and dens_wpm >= 165.0:
             blended = 0.5 * dens_wpm + 0.5 * inst_wpm
         else:
             blended = dens_wpm

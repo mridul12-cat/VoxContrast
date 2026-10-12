@@ -110,3 +110,16 @@ def test_unvoiced_whisper_rescaling(sample_metadata):
     scores = calculate_rubric_scores(whisper_features, [], sample_metadata)
     assert 0.0 <= scores.overall_score <= 100.0
     assert scores.dimensions["pitch_modulation"].weight == 0.0
+
+
+def test_baseline_rubric_perfect_score(sample_features, sample_metadata):
+    """
+    Verifies reference baseline audio is treated as perfect without deductions,
+    scoring exactly 95.0 across overall and individual dimensions.
+    """
+    base_scores = calculate_rubric_scores(sample_features, [], sample_metadata, is_baseline=True)
+    assert base_scores.overall_score == 95.0
+    for dim in base_scores.dimensions.values():
+        assert dim.score == 95.0
+        assert dim.raw_deduction == 0.0
+        assert len(dim.deduction_reasons) == 0

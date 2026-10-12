@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_04_keynote_excessive_speed_2",
+  "text_id": "speech_04_keynote",
+  "split": "train_dev",
+  "category": "excessive_speed",
+  "severity": "severe",
+  "duration_s": 12.08,
+  "baseline_audio_file": "data/audio/baselines/speech_04_keynote_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_04_keynote_excessive_speed_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_04_keynote_excessive_speed_2_01",
+      "category": "excessive_speed",
+      "start_s": 4.0,
+      "end_s": 4.9,
+      "transcript_slice": "unifies real time audio",
+      "observed_value": 205.1,
+      "baseline_value": 140.0,
+      "unit": "WPM",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_excessive_speed",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

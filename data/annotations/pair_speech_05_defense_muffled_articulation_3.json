@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_05_defense_muffled_articulation_3",
+  "text_id": "speech_05_defense",
+  "split": "final_test",
+  "category": "muffled_articulation",
+  "severity": "severe",
+  "duration_s": 29.44,
+  "baseline_audio_file": "data/audio/baselines/speech_05_defense_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_05_defense_muffled_articulation_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_05_defense_muffled_articulation_3_01",
+      "category": "muffled_articulation",
+      "start_s": 13.8,
+      "end_s": 14.9,
+      "transcript_slice": "rigorous mathematical",
+      "observed_value": 732.1,
+      "baseline_value": 2100.0,
+      "unit": "Hz",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_muffled_articulation",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}

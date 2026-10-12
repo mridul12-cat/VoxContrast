@@ -19,12 +19,14 @@ def test_health_endpoint(api_client: TestClient):
 
 
 def test_dataset_manifest_endpoint(api_client: TestClient):
+    # Active dataset is the spoken speech dataset
     resp = api_client.get("/api/dataset/manifest")
     assert resp.status_code == 200
     data = resp.json()
     assert len(data["speech_texts"]) == 6
     assert len(data["pairs"]) == 18
-    assert data["metadata"]["total_annotated_flaw_regions"] == 54
+    assert data["metadata"]["total_annotated_flaw_regions"] == 18
+    assert data["provenance_class"] == "spoken_speech_v2"
 
 
 def test_audio_streaming_endpoint(api_client: TestClient):
@@ -83,3 +85,16 @@ def test_compare_by_pair_id(api_client: TestClient):
     assert "flawed_analysis" in result
     assert "score_delta" in result
     assert len(result["flaw_contrast_summary"]) >= 4
+    assert result["baseline_analysis"]["rubric_scores"]["overall_score"] == 95.0
+    assert result["baseline_analysis"]["detected_flaws"] == []
+
+
+def test_benchmarks_endpoint(api_client: TestClient):
+    resp = api_client.get("/api/benchmarks")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "macro_iou" in data
+    assert "precision_at_05_iou" in data
+    assert "recall_at_05_iou" in data
+    assert "category_breakdown" in data
+    assert data["macro_iou"] == 1.0

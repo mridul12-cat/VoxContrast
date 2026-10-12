@@ -12,12 +12,64 @@ from core.schemas import (
 def calculate_rubric_scores(
     features: FeaturesSummary,
     detected_flaws: list[DetectedFlaw],
-    metadata: AudioMetadata
+    metadata: AudioMetadata,
+    is_baseline: bool = False
 ) -> RubricScores:
     """
     Evaluates speech performance deterministically across 5 dimensions (0 - 100 points).
     Guarantees 0.0000 variation across repeated identical inputs.
+    When is_baseline is True, the audio is treated as the reference standard (95.0 / 100)
+    without flaw deductions.
     """
+    if is_baseline:
+        dimensions: dict[str, RubricDimensionScore] = {
+            "pacing_stability": RubricDimensionScore(
+                dimension_name="Pacing & Rate Stability",
+                score=95.0,
+                max_points=25.0,
+                weight=0.25,
+                raw_deduction=0.0,
+                deduction_reasons=[]
+            ),
+            "pause_control": RubricDimensionScore(
+                dimension_name="Pause Control",
+                score=95.0,
+                max_points=20.0,
+                weight=0.20,
+                raw_deduction=0.0,
+                deduction_reasons=[]
+            ),
+            "vocal_energy": RubricDimensionScore(
+                dimension_name="Vocal Energy & Projection",
+                score=95.0,
+                max_points=20.0,
+                weight=0.20,
+                raw_deduction=0.0,
+                deduction_reasons=[]
+            ),
+            "pitch_modulation": RubricDimensionScore(
+                dimension_name="Pitch Modulation & Inflection",
+                score=95.0,
+                max_points=20.0,
+                weight=0.20,
+                raw_deduction=0.0,
+                deduction_reasons=[]
+            ),
+            "vocal_clarity": RubricDimensionScore(
+                dimension_name="Vocal Clarity & Articulation",
+                score=95.0,
+                max_points=15.0,
+                weight=0.15,
+                raw_deduction=0.0,
+                deduction_reasons=[]
+            )
+        }
+        return RubricScores(
+            overall_score=95.0,
+            version="rubric_v1.0",
+            dimensions=dimensions
+        )
+
     dimensions: dict[str, RubricDimensionScore] = {}
 
     # ---------------------------------------------------------

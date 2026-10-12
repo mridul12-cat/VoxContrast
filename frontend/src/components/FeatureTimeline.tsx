@@ -1,11 +1,12 @@
 import React, { useRef, useEffect } from "react";
-import { TimeSeriesData } from "../services/api";
+import { TimeSeriesData, DetectedFlaw } from "../services/api";
 
 interface FeatureTimelineProps {
   timeSeries: TimeSeriesData | null;
   duration: number;
   currentTime: number;
   onSeek: (seconds: number) => void;
+  flaws?: DetectedFlaw[];
 }
 
 export const FeatureTimeline: React.FC<FeatureTimelineProps> = ({
@@ -13,6 +14,7 @@ export const FeatureTimeline: React.FC<FeatureTimelineProps> = ({
   duration,
   currentTime,
   onSeek,
+  flaws = [],
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -31,6 +33,78 @@ export const FeatureTimeline: React.FC<FeatureTimelineProps> = ({
 
     const n = timeSeries.time_stamps.length;
     if (n === 0) return;
+
+    // Grid guide lines
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.33); ctx.lineTo(w, h * 0.33);
+    ctx.moveTo(0, h * 0.66); ctx.lineTo(w, h * 0.66);
+    ctx.stroke();
+
+    // Pause Region Highlights on Timeline
+    const totalDur = duration || (n > 1 ? timeSeries.time_stamps[n - 1] : 10);
+    const SILENCE_DB = -36.0;
+    interface PauseRegion {
+      start_s: number;
+      end_s: number;
+      duration_s: number;
+      isFlaw: boolean;
+    }
+    const pauses: PauseRegion[] = [];
+    let pStart: number | null = null;
+    const dt = timeSeries.time_step_s || (n > 1 ? (timeSeries.time_stamps[n - 1] - timeSeries.time_stamps[0]) / (n - 1) : 0.05);
+
+    for (let i = 0; i < n; i++) {
+      const t = timeSeries.time_stamps[i];
+      const isQuiet = timeSeries.rms_energy_db[i] <= SILENCE_DB;
+      if (isQuiet && pStart === null) {
+        pStart = t;
+      } else if (!isQuiet && pStart !== null) {
+        const pEnd = t;
+        const dur = pEnd - pStart;
+        if (dur >= 0.35) {
+          pauses.push({ start_s: pStart, end_s: pEnd, duration_s: dur, isFlaw: false });
+        }
+        pStart = null;
+      }
+    }
+    if (pStart !== null) {
+      const pEnd = timeSeries.time_stamps[n - 1] + dt;
+      if (pEnd - pStart >= 0.35) {
+        pauses.push({ start_s: pStart, end_s: pEnd, duration_s: pEnd - pStart, isFlaw: false });
+      }
+    }
+
+    // Correlate with detected unnatural pause flaws
+    flaws.forEach((f) => {
+      if (f.category === "unnatural_pause") {
+        const matched = pauses.find((p) => Math.abs(p.start_s - f.start_s) < 0.4 || (f.start_s >= p.start_s && f.end_s <= p.end_s));
+        if (!matched) {
+          pauses.push({ start_s: f.start_s, end_s: f.end_s, duration_s: f.end_s - f.start_s, isFlaw: true });
+        } else {
+          matched.isFlaw = true;
+        }
+      }
+    });
+
+    pauses.forEach((p) => {
+      const startX = (p.start_s / (totalDur || 1)) * w;
+      const endX = (p.end_s / (totalDur || 1)) * w;
+      const pauseW = Math.max(2, endX - startX);
+
+      ctx.fillStyle = p.isFlaw ? "rgba(245, 158, 11, 0.12)" : "rgba(51, 65, 85, 0.25)";
+      ctx.fillRect(startX, 0, pauseW, h);
+
+      ctx.strokeStyle = p.isFlaw ? "rgba(245, 158, 11, 0.5)" : "rgba(100, 116, 139, 0.35)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 2]);
+      ctx.beginPath();
+      ctx.moveTo(startX, 0); ctx.lineTo(startX, h);
+      ctx.moveTo(endX, 0); ctx.lineTo(endX, h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
 
     // Pitch (Indigo)
     ctx.strokeStyle = "#818cf8";
@@ -53,6 +127,21 @@ export const FeatureTimeline: React.FC<FeatureTimelineProps> = ({
       }
     }
     ctx.stroke();
+
+    // Energy Silence Threshold (-38 dB) guide line
+    const silenceY = h * 0.64 - Math.max(0, Math.min(h * 0.30, ((-38 + 60) / 60) * (h * 0.30)));
+    ctx.strokeStyle = "rgba(239, 68, 68, 0.45)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, silenceY); ctx.lineTo(w, silenceY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "#ef4444";
+    ctx.font = '8px "JetBrains Mono", monospace';
+    ctx.textAlign = "right";
+    ctx.fillText("Silence Threshold (-38dB)", w - 6, silenceY - 3);
 
     // Energy (Amber)
     ctx.strokeStyle = "#fbbf24";
@@ -79,7 +168,7 @@ export const FeatureTimeline: React.FC<FeatureTimelineProps> = ({
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
-  }, [timeSeries]);
+  }, [timeSeries, duration, flaws]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();

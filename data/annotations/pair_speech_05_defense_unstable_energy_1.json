@@ -1,0 +1,26 @@
+{
+  "pair_id": "pair_speech_05_defense_unstable_energy_1",
+  "text_id": "speech_05_defense",
+  "split": "final_test",
+  "category": "unstable_energy",
+  "severity": "severe",
+  "duration_s": 17.52,
+  "baseline_audio_file": "data/audio/baselines/speech_05_defense_baseline.wav",
+  "flawed_audio_file": "data/audio/flawed/speech_05_defense_unstable_energy_severe.wav",
+  "validation_status": "CONFIRMED",
+  "ground_truth_flaws": [
+    {
+      "flaw_id": "gt_pair_speech_05_defense_unstable_energy_1_01",
+      "category": "unstable_energy",
+      "start_s": 7.78,
+      "end_s": 8.35,
+      "transcript_slice": "while maintaining",
+      "observed_value": 13.8,
+      "baseline_value": 8.0,
+      "unit": "dB",
+      "severity": "severe",
+      "annotation_method": "acoustic_alignment_contrastive_grounding_unstable_energy",
+      "validation_status": "CONFIRMED"
+    }
+  ]
+}
