@@ -252,6 +252,13 @@ For in-depth technical details, please refer to:
 
 ---
 
+## AI Tools & Development
+
+**Google Gemini** was used as an AI-assisted development tool during the development of VoxContrast, supporting implementation, debugging, and refinement of the project.
+
+The core speech-analysis pipeline uses deterministic signal-processing and scoring methods to extract acoustic features, identify potential delivery flaws, and generate timestamped feedback. Gemini-assisted development should not be confused with runtime inference by the deployed application.
+
+
 ## 📄 License
 
 The code is licensed under the Apache 2.0 License. The dataset, annotations, and audio waveforms are licensed under the Creative Commons Attribution 4.0 International License ([CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)).
