@@ -226,11 +226,8 @@ $$\text{IoU}(I_{\text{det}}, I_{\text{gt}}) = \frac{|I_{\text{det}} \cap I_{\tex
 
 | Evaluation Split | Dataset Version & Voice | Flaws | Macro IoU | Mean Onset Err | Mean Offset Err | Prec @ 0.5 | Rec @ 0.5 | F1 @ 0.5 |
 |---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Original Frozen Benchmark** | Historical Glottal Synthesizer | 54 | **0.8580** | **163.1 ms** | **82.3 ms** | **0.9123** | **0.9630** | **0.9369** |
-| **TTS Expanded V2 (Train/Dev)** | Spoken Speech (Samantha, en_US) | 10 | **0.7842** | **158.9 ms** | **263.3 ms** | 0.1552 | **0.9000** | 0.2647 |
-| **TTS Expanded V2 (Final Test)** | Cross-Voice (Daniel, en_GB) | 4 | **0.7011** | **126.7 ms** | **246.7 ms** | 0.2143 | **0.7500** | 0.3333 |
-| **TTS Expanded V1 (Validation)** | TTS V1 (Curie & Roosevelt) | 5 | **0.7317** | **355.0 ms** | **110.0 ms** | 0.1667 | **0.8000** | 0.2759 |
-| **TTS Expanded V1 (Held-Out)** | TTS V1 (Mandela & Turing) | 4 | **0.7188** | **387.5 ms** | **310.0 ms** | 0.1379 | **1.0000** | 0.2424 |
+| **Original Frozen Benchmark** | Historical Synthesizer | 54 | **0.8580** | **163.1 ms** | **82.3 ms** | **0.9123** | **0.9630** | **0.9369** |
+
 
 #### 6.2 Per-Category Grounding Breakdown (Original Benchmark)
 
