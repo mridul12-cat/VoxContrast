@@ -76,12 +76,12 @@ The dataset spans diverse cadence profiles across 6 speeches:
 6. `speech_06_debate`: Competitive Policy Debate Opening (High-density structured arguments, staccato rhythm, 155 WPM).
 
 #### 2.2 Paired Contrastive Architecture & Provenance Disclosures
-VoxContrast explicitly segregates and discloses two tiers of contrastive datasets to maintain absolute scientific integrity:
+VoxContrast explicitly segregates and discloses datasets to maintain absolute scientific integrity:
 
 1. **Original Historical Benchmark (`data/manifest.json`):**
-   18 contrastive pairs (24 WAV files, 54 ground-truth flaws) generated via programmatic glottal-harmonic acoustic modeling (`scripts/generate_dataset.py`). These provide an immutable, mathematically controlled benchmark for evaluating algorithm-to-ground-truth boundary precision, though lacking formant-resonated phonetic intelligibility.
-2. **Spoken Speech Dataset V2 (`data/tts_expanded_v2/manifest.json`):**
-   18 contrastive pairs (24 WAV files, 14 confirmed flaws) generated using macOS `/usr/bin/say` speech synthesis across two distinct voices (`Samantha` en_US female for `train_dev` and `Daniel` en_GB male for `final_test`). Spoken utterances are resampled to 16 kHz mono post-synthesis. Flawed counter-utterances use precise phrase-level splicing and DSP transformations with exact ground-truth timestamps. All 6 baseline recordings passed automated physical audio verification (SNR > 31 dB, 0.0% clipping, 100% word-level forced alignment confidence).
+   
+   18 contrastive pairs (24 WAV files, 54 ground-truth flaws) generated via programmatic glottal-harmonic acoustic modeling (`scripts/generate_dataset.py`). These provide an immutable, mathematically controlled benchmark for evaluating algorithm-to-ground-truth boundary precision.
+
 
 Controlled anomaly perturbations span five rubric dimensions:
 - **Excessive Speed:** Words articulated at $230 - 245\text{ WPM}$ with compressed inter-word gaps ($20\text{ms}$).
@@ -277,4 +277,12 @@ The complete system runs locally as an integrated web application:
 VoxContrast establishes that deterministic, signal-processing-grounded speech analytics can surpass probabilistic language models in interpretability, temporal precision, and bias resistance. By achieving a Macro IoU of $0.7687$ and $100\%$ score reproducibility on standard hardware, VoxContrast offers a scalable foundation for equitable speech pedagogy, courtroom rhetoric training, and contrastive audio evaluation. Future directions include cross-lingual phoneme-level forced alignment and respiratory acoustic contour modeling.
 
 ---
+
+## AI Tools & Development
+
+**Google Gemini** was used as an AI-assisted development tool during the development of VoxContrast, supporting implementation, debugging, and refinement of the project.
+
+The core speech-analysis pipeline uses deterministic signal-processing and scoring methods to extract acoustic features, identify potential delivery flaws, and generate timestamped feedback. Gemini-assisted development should not be confused with runtime inference by the deployed application.
+
+
 *VoxContrast Technical Report — Multimodal AI Hackathon 2026*
